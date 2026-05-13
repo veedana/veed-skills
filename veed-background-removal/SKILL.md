@@ -1,20 +1,19 @@
 ---
-version: 1.1.0
+version: 1.2.0
 name: veed-background-removal
 description: >
-  Remove the background from any video using VEED's Background Removal API
-  on Fal. Use when: "remove background from this video", "remove the
-  background", "make the background transparent", "extract the subject",
-  "green screen removal". Accepts both URLs and local file paths.
+  Remove the background from any video using VEED's Background Removal API.
+  Use when: "remove background from this video", "remove the background",
+  "make the background transparent", "extract the subject", "green screen
+  removal". Accepts videos dragged into chat, local file paths, or URLs.
   NOT for: removing backgrounds from images (video only).
 ---
 
 # VEED Background Removal
 
 ## What this skill does
-Takes a video and removes the background, returning a clean video with
-just the subject. Accepts both public URLs and local files from the
-user's computer. Three modes available.
+Takes a video and removes the background. Accepts videos dragged into chat,
+local file paths, or public URLs. Three modes available.
 Powered by VEED's Background Removal API on Fal.
 
 ## Before you start
@@ -23,24 +22,37 @@ The user needs:
 - Set it as an environment variable: export FAL_KEY=your_key_here
 
 ## What to ask the user for
-1. Video — a local file path (e.g. /Users/ana/Desktop/video.mp4) or
-   a public URL. Accepted formats: MP4, MOV, WEBM
+1. Video — drag into chat, provide a local file path, or a public URL.
+   Accepted formats: MP4, MOV, WEBM
 2. Mode:
    - Standard (veed/video-background-removal) — best quality. Default.
    - Fast (veed/video-background-removal/fast) — quicker, high volume.
-   - Green screen (veed/video-background-removal/green-screen) —
-     for green screen footage.
+   - Green screen (veed/video-background-removal/green-screen) — for
+     green screen footage.
 3. Refine foreground edges — ON ($0.0225/30 frames) or OFF ($0.012/30 frames).
    Default to ON.
 
-## Step 1 — Upload local video to Fal (if needed)
-If the user provides a local file path instead of a URL, upload it first.
+## Step 1 — Handle video input
+If the user dragged a video into the chat, save it as a temp file
+and upload it to Fal. Use this Python code:
 
 import fal_client
+import tempfile
+import os
 
+# Save dragged video to a temp file
+with tempfile.NamedTemporaryFile(suffix=".mp4", delete=False) as tmp:
+    tmp.write(video_bytes)  # video_bytes from the dragged video
+    tmp_path = tmp.name
+
+# Upload to Fal storage
+video_url = fal_client.upload_file(tmp_path)
+os.unlink(tmp_path)  # clean up temp file
+
+If the user provided a local file path, upload directly:
 video_url = fal_client.upload_file("<LOCAL_VIDEO_PATH>")
 
-If already a URL, skip this step and use the URL directly.
+If already a public URL, use it directly — no upload needed.
 
 ## Step 2 — Remove the background
 
@@ -56,10 +68,9 @@ result = fal_client.run(
 print(result["video"]["url"])
 
 ## After the call
-- Return the video.url from the response to the user
-- Approximate cost: (total frames / 30) x $0.0225 (Refine ON)
-  or x $0.012 (Refine OFF)
-  Example: 10-second video at 30fps = 300 frames = 10 units x $0.0225 = $0.225
+- Return the video.url to the user
+- Cost: (total frames / 30) x $0.0225 (Refine ON) or x $0.012 (Refine OFF)
+- Example: 10-second video at 30fps = 10 units x $0.0225 = $0.225
 - 401 error: FAL_KEY is invalid or not set
 - 422 error: video not accessible or format not supported
 
