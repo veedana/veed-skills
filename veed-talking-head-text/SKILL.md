@@ -28,6 +28,10 @@ The user needs:
 1. Image — drag into chat, provide a local file path, or a public URL.
 2. Script / text — what do you want the person to say?
 3. Resolution — 480p ($0.08/sec) or 720p ($0.15/sec). Default: 480p.
+4. Voice description (optional) — any voice characteristics you want.
+   Simple: "British accent", "Confident", "Friendly"
+   Detailed: "Confident female voice, mid-30s, warm and professional tone"
+   If not specified, VEED auto-generates a voice from the image.
 
 ## Step 1 — Handle image input
 If the user dragged an image into the chat, save it as a temporary file
@@ -60,7 +64,8 @@ result = fal_client.run(
     arguments={
         "image_url": image_url,
         "text": "<SCRIPT_TEXT>",
-        "resolution": "480p"
+        "resolution": "480p",
+        "voice_description": "<VOICE_DESCRIPTION>" 
     }
 )
 print(result["video"]["url"])
