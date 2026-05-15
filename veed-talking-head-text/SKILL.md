@@ -1,5 +1,5 @@
 ---
-version: 1.2.0
+version: 1.3.0
 name: veed-talking-head-text
 description: >
   Generate a talking head video from a static image and a text script
@@ -7,7 +7,7 @@ description: >
   the script to speech automatically. Use when: "generate a talking head
   video from a script", "make this image say this", "create a spokesperson
   video with this text", "I want to type what the person says".
-  Accepts images dragged into chat, local file paths, or public URLs.
+  Accepts local file paths or public URLs for the image.
   NOT for: using your own audio file (use veed-talking-head).
 ---
 
@@ -16,7 +16,7 @@ description: >
 ## What this skill does
 Takes a static image and a text script. VEED's AI voice generator converts
 the text to speech and syncs it to the image. No audio file needed.
-Accepts images dragged into chat, local file paths, or public URLs.
+Maximum generation: 30 seconds of output video.
 Powered by VEED's Fabric 1.0 Text model on Fal.
 
 ## Before you start
@@ -25,59 +25,91 @@ The user needs:
 - Set it as an environment variable: export FAL_KEY=your_key_here
 
 ## What to ask the user for
-1. Image — drag into chat, provide a local file path, or a public URL.
-2. Script / text — what do you want the person to say?
-3. Resolution — 480p ($0.08/sec) or 720p ($0.15/sec). Default: 480p.
-4. Voice description (optional) — any voice characteristics you want.
-   Simple: "British accent", "Confident", "Friendly"
+
+Collect ALL of the following before proceeding:
+
+1. Image — a local file path or public URL of the image to animate.
+   Must show a face clearly. Accepted formats: JPG, PNG, WebP, GIF, AVIF
+   Tip on Mac: right-click file in Finder → hold Option → Copy as Pathname
+
+2. Script — what do you want the person to say?
+   Keep it short — maximum 30 seconds of speech per generation.
+
+3. Voice description (optional) — any voice characteristics.
+   Simple: "British accent", "Confident", "Warm and friendly"
    Detailed: "Confident female voice, mid-30s, warm and professional tone"
-   If not specified, VEED auto-generates a voice from the image.
+   If not provided, VEED auto-generates a voice that matches the image.
+   Leave blank to skip — do NOT pass a placeholder if the user skips this.
+
+4. Resolution — ask which the user prefers:
+   - 480p — $0.08 per second of output video
+   - 720p — $0.15 per second of output video
+   Default to 480p if not specified.
 
 ## Step 1 — Handle image input
-If the user dragged an image into the chat, save it as a temporary file
-and upload it to Fal. Use this Python code:
+
+If the user provided a local file path, upload it to Fal:
 
 import fal_client
-import tempfile
-import os
-
-# Save dragged image to a temp file
-with tempfile.NamedTemporaryFile(suffix=".jpg", delete=False) as tmp:
-    tmp.write(image_bytes)  # image_bytes from the dragged image
-    tmp_path = tmp.name
-
-# Upload to Fal storage
-image_url = fal_client.upload_file(tmp_path)
-os.unlink(tmp_path)  # clean up temp file
-
-If the user provided a local file path, upload directly:
-image_url = fal_client.upload_file("<LOCAL_FILE_PATH>")
+image_url = fal_client.upload_file(image_path)
 
 If already a public URL, use it directly — no upload needed.
 
-## Step 2 — Generate the video
+## Step 2 — Show cost estimate before proceeding
+
+Estimate the output duration from the script length
+(roughly 130 words per minute as a baseline).
+
+estimated_seconds = word_count / 130 x 60
+estimated_cost = estimated_seconds x price_per_second
+
+Where price_per_second is $0.08 (480p) or $0.15 (720p).
+
+Show the estimate and ask the user to confirm before proceeding.
+Example: "This script (~20 words) will take roughly 9 seconds and cost
+approximately $0.72 at 720p. Shall I proceed?"
+
+## Step 3 — Generate the video
+
+Build the arguments dict conditionally — only include voice_description
+if the user actually provided one:
 
 import fal_client
 
-result = fal_client.run(
+arguments = {
+    "image_url": image_url,
+    "text": script_text,
+    "resolution": resolution
+}
+
+if voice_description:
+    arguments["voice_description"] = voice_description
+
+def on_queue_update(update):
+    if hasattr(update, "logs"):
+        for log in update.logs:
+            print(log["message"])
+
+result = fal_client.subscribe(
     "veed/fabric-1.0/text",
-    arguments={
-        "image_url": image_url,
-        "text": "<SCRIPT_TEXT>",
-        "resolution": "480p",
-        "voice_description": "<VOICE_DESCRIPTION>" 
-    }
+    arguments=arguments,
+    with_logs=True,
+    on_queue_update=on_queue_update
 )
+
 print(result["video"]["url"])
 
 ## After the call
 - Return the video.url to the user
-- Cost: duration in seconds x $0.08 (480p) or x $0.15 (720p)
+- Warn the user that Fal URLs expire after ~24 hours — download locally
+  if they want to keep it
 - 401 error: FAL_KEY is invalid or not set
-- 422 error: image not accessible or text too long
+- 422 error: image not accessible, wrong format, or script too long
+- 429 error: rate limit — wait a moment and retry
+- 500 error: model error on Fal's side — retry once before giving up
 
 ## Pricing
-- 480p: $0.08 per second
-- 720p: $0.15 per second
-- Max duration: 5 minutes
+- 480p: $0.08 per second of output video
+- 720p: $0.15 per second of output video
+- Maximum: 30 seconds per generation
 - Fal model page: https://fal.ai/models/veed/fabric-1.0/text
