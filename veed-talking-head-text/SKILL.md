@@ -1,5 +1,5 @@
 ---
-version: 1.3.0
+version: 1.4.0
 name: veed-talking-head-text
 description: >
   Generate a talking head video from a static image and a text script
@@ -26,7 +26,7 @@ The user needs:
 
 ## What to ask the user for
 
-Collect ALL of the following before proceeding:
+IMPORTANT: Collect ALL four inputs before proceeding. Do not skip any.
 
 1. Image — a local file path or public URL of the image to animate.
    Must show a face clearly. Accepted formats: JPG, PNG, WebP, GIF, AVIF
@@ -35,11 +35,15 @@ Collect ALL of the following before proceeding:
 2. Script — what do you want the person to say?
    Keep it short — maximum 30 seconds of speech per generation.
 
-3. Voice description (optional) — any voice characteristics.
-   Simple: "British accent", "Confident", "Warm and friendly"
-   Detailed: "Confident female voice, mid-30s, warm and professional tone"
-   If not provided, VEED auto-generates a voice that matches the image.
-   Leave blank to skip — do NOT pass a placeholder if the user skips this.
+3. Voice description — ALWAYS ask this question explicitly. Do not skip it.
+   Say to the user: "How would you like the voice to sound? You can use
+   simple descriptors like 'British accent' or 'Confident and warm', or
+   something more detailed like 'Professional female voice, mid-30s, calm
+   and authoritative tone'. If you have no preference, just say 'auto'
+   and VEED will generate a voice based on the image."
+   - If the user provides a description → store it as voice_description
+   - If the user says 'auto', 'skip', 'no preference', or similar → set
+     voice_description to None and do NOT pass it in the API call
 
 4. Resolution — ask which the user prefers:
    - 480p — $0.08 per second of output video
@@ -72,7 +76,7 @@ approximately $0.72 at 720p. Shall I proceed?"
 ## Step 3 — Generate the video
 
 Build the arguments dict conditionally — only include voice_description
-if the user actually provided one:
+if the user provided one (not None):
 
 import fal_client
 
@@ -82,7 +86,7 @@ arguments = {
     "resolution": resolution
 }
 
-if voice_description:
+if voice_description is not None:
     arguments["voice_description"] = voice_description
 
 def on_queue_update(update):
