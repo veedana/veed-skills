@@ -1,0 +1,39 @@
+{
+  "name": "veed",
+  "version": "1.0.0",
+  "description": "Agentic AI Video Creation — drop-in skills that teach your agent to make video with VEED. Talking heads (audio-driven and text-driven), styled subtitles, and background removal, powered by VEED's APIs on Fal.",
+  "author": {
+    "name": "VEED",
+    "url": "https://veed.io"
+  },
+  "homepage": "https://veed.io",
+  "repository": "https://github.com/veedana/veed-skills",
+  "license": "MIT",
+  "keywords": [
+    "veed",
+    "video",
+    "talking-head",
+    "lipsync",
+    "subtitles",
+    "background-removal",
+    "ai-video",
+    "fal",
+    "agentic-video"
+  ],
+  "skills": "./",
+  "interface": {
+    "displayName": "VEED",
+    "shortDescription": "Agentic AI video creation — talking heads, subtitles, background removal",
+    "longDescription": "VEED Skills give your agent the ability to create video without leaving the chat. Use /veed:talking-head and /veed:talking-head-text to animate any photo into a lip-synced presenter (audio file or generated speech from text), /veed:subtitles to burn styled captions onto any video with 27 visual presets and auto-transcription in 125+ languages, and /veed:background-removal to extract subjects with three modes (standard, fast, green screen). All skills run on VEED's APIs via Fal.",
+    "developerName": "VEED",
+    "category": "Design",
+    "capabilities": ["Read", "Write"],
+    "websiteURL": "https://veed.io",
+    "defaultPrompt": [
+      "Animate this photo to lip-sync this audio: [image] + [audio]",
+      "Make this photo say 'Welcome to our store' in a confident British accent",
+      "Add animated subtitles to this video using the glass preset",
+      "Remove the background from this video"
+    ]
+  }
+}

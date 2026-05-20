@@ -1,0 +1,37 @@
+{
+  "name": "veed",
+  "owner": {
+    "name": "VEED",
+    "url": "https://veed.io"
+  },
+  "plugins": [
+    {
+      "name": "veed",
+      "source": "./",
+      "description": "VEED Skills — agentic AI video creation. Use /veed:talking-head and /veed:talking-head-text to animate any photo into a presenter, /veed:subtitles to add styled captions, and /veed:background-removal to extract subjects from video.",
+      "version": "1.0.0",
+      "skills": [
+        {
+          "name": "talking-head",
+          "path": "veed-talking-head",
+          "invoke": "/veed:talking-head"
+        },
+        {
+          "name": "talking-head-text",
+          "path": "veed-talking-head-text",
+          "invoke": "/veed:talking-head-text"
+        },
+        {
+          "name": "subtitles",
+          "path": "veed-subtitles",
+          "invoke": "/veed:subtitles"
+        },
+        {
+          "name": "background-removal",
+          "path": "veed-background-removal",
+          "invoke": "/veed:background-removal"
+        }
+      ]
+    }
+  ]
+}
