@@ -1,5 +1,7 @@
 # VEED Skills
 
+![VEED Skills](./assets/veed-cli-banner.png)
+
 ### Agentic AI Video Creation
 
 Drop-in skills that teach your AI agent to make video with VEED — talking heads, styled subtitles, and background removal — powered by VEED's APIs on Fal.
