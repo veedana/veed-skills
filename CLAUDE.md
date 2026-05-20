@@ -87,7 +87,7 @@ Validated decisions that should not be revisited without new data:
 3. **Fal MCP exposes a generic surface, not typed per-model tools.** 9 tools (`search`, `run`, `chain`) over the whole Fal catalog. Skills' calls look like `mcp__fal-ai__run` with `model: "veed/subtitles"`, not `mcp__fal-ai__veed_subtitles`.
 4. **Fal MCP OAuth is not yet live.** Until Fal ships OAuth, `claude.ai` Custom Connectors and Claude Desktop (which require OAuth) cannot use it. Claude Code, Cursor, Codex, Windsurf work today via the Bearer-key path.
 5. **No process overhead in Phase 1.** No CI, no release-please, no `CONTRIBUTING.md`, no `CODEOWNERS`, no `INSTALL_FOR_AGENTS.md`, no `setup` script. Add only when there's evidence one is needed.
-6. **Assets-referencing fields are omitted from Codex/Cursor manifests.** `composerIcon`, `logo`, `brandColor` (Codex) and `logo` (Cursor) are removed until `assets/icon.png` + `assets/logo.png` ship in a Phase 2 polish PR.
+6. **Brand assets ship in `assets/`.** `assets/icon.png` (515×512) is referenced as both `composerIcon` and `logo` in `.codex-plugin/plugin.json` and as `logo` in `.cursor-plugin/plugin.json`. Brand colour is `#96FF1A` (VEED green). A dedicated wordmark logo can replace the icon-for-logo reuse later if marketplace detail pages need it.
 7. **Skills are independent — no shared state files.** Unlike heygen's `AVATAR-<NAME>.md` pattern that coordinates avatar→video skills, veed's four skills are independent today. If a chaining use case demands shared state, revisit.
 
 ## When this file changes

@@ -34,6 +34,9 @@
       "Make this photo say 'Welcome to our store' in a confident British accent",
       "Add animated subtitles to this video using the glass preset",
       "Remove the background from this video"
-    ]
+    ],
+    "brandColor": "#96FF1A",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/icon.png"
   }
 }

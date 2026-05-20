@@ -11,6 +11,7 @@
   "homepage": "https://veed.io",
   "repository": "https://github.com/veedana/veed-skills",
   "license": "MIT",
+  "logo": "assets/icon.png",
   "category": "developer-tools",
   "keywords": [
     "veed",

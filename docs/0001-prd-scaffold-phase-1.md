@@ -33,8 +33,8 @@ Pitch: **"VEED Skills — Agentic AI Video Creation"** with subtitle *"Drop-in s
 
 6. **`.claude-plugin/plugin.json`** — `name: "veed"`, `version: "1.0.0"`, MIT, repo `https://github.com/veedana/veed-skills`, keywords `[veed, video, talking-head, lipsync, subtitles, background-removal, ai-video, fal, agentic-video]`
 7. **`.claude-plugin/marketplace.json`** — one plugin entry with `skills` array of 4: `talking-head` → `/veed:talking-head`, `talking-head-text` → `/veed:talking-head-text`, `subtitles` → `/veed:subtitles`, `background-removal` → `/veed:background-removal`
-8. **`.codex-plugin/plugin.json`** — mirrors heygen's structure with veed values. `interface` block has `displayName`, `shortDescription`, `longDescription`, `developerName: "VEED"`, `category: "Design"`, `capabilities: ["Read", "Write"]`, `websiteURL: "https://veed.io"`, `defaultPrompt` (4 example prompts). **Omit** `composerIcon`, `logo`, `brandColor` — re-added in Phase 2 polish PR alongside `assets/`
-9. **`.cursor-plugin/plugin.json`** — `$schema: "https://cursor.com/schemas/cursor-plugin/plugin.json"`, `name: "veed"`, `displayName: "VEED"`, `publisher: "VEED"`, `category: "developer-tools"`, `skills: ["./veed-talking-head/", "./veed-talking-head-text/", "./veed-subtitles/", "./veed-background-removal/"]`. **Omit** `logo` field
+8. **`.codex-plugin/plugin.json`** — mirrors heygen's structure with veed values. `interface` block has `displayName`, `shortDescription`, `longDescription`, `developerName: "VEED"`, `category: "Design"`, `capabilities: ["Read", "Write"]`, `websiteURL: "https://veed.io"`, `defaultPrompt` (4 example prompts), `brandColor: "#96FF1A"`, and `composerIcon` + `logo` both pointing at `./assets/icon.png`
+9. **`.cursor-plugin/plugin.json`** — `$schema: "https://cursor.com/schemas/cursor-plugin/plugin.json"`, `name: "veed"`, `displayName: "VEED"`, `publisher: "VEED"`, `category: "developer-tools"`, `logo: "assets/icon.png"`, `skills: ["./veed-talking-head/", "./veed-talking-head-text/", "./veed-subtitles/", "./veed-background-removal/"]`
 
 ### Transport
 
@@ -87,7 +87,7 @@ Deferred to follow-up branches, in rough priority order:
 - `VERSION` + `CHANGELOG.md` + release-please — no release ceremony yet
 - ClawHub publish workflow + `.clawhubignore` — only if veed targets ClawHub as a channel
 - `.app.json` (ChatGPT app linkage) — veed has no ChatGPT app yet
-- `assets/icon.png` + `assets/logo.png` + re-adding `composerIcon` / `logo` / `brandColor` — Phase 2 polish PR
+- ~~`assets/icon.png` + re-adding `composerIcon` / `logo` / `brandColor`~~ — **shipped in this PR** (515×512 icon, `#96FF1A` brand colour, icon reused for `logo` field; dedicated wordmark logo can land later if needed)
 - `setup` shell script — `claude mcp add` + `export FAL_KEY` are one-liners
 - `CODEOWNERS` — add when there's >1 maintainer
 - `references/` refactor for `veed-subtitles` — only when SKILL.md outgrows ~12 KB
