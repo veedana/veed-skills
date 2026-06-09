@@ -60,11 +60,25 @@ Do not skip any question, even if the user gave you a one-line brief.
    - Accepted audio formats: MP3, WAV, M4A, AAC
 
 4. Voice description — ONLY ask this if mode == "text". Say to the user:
-   "How would you like the voice to sound? You can use descriptors like
-   'British accent' or 'Confident and warm', or say 'auto' to let VEED
-   pick a voice based on the spokesperson image."
-   - If the user provides a description → store as voice_description
-   - If the user says 'auto' or similar → set voice_description to None
+   "How would you like the voice to sound? For best results, describe
+   multiple attributes — gender, age, accent, tone, energy. For example:
+   'Professional female voice, mid-30s, British accent, warm and
+   confident' works much better than just 'British accent'. Or say
+   'auto' to let VEED pick a voice based on the spokesperson image."
+   - If the user provides a specific description (anything other than an
+     opt-out phrase below) → store as voice_description
+   - If the user says ANY of: 'auto', 'skip', 'no preference', 'you
+     pick', 'doesn't matter', 'default', or any other phrase indicating
+     no preference → set voice_description to None.
+   CRITICAL: Do NOT store the literal string "auto" (or similar opt-out
+   phrases) as voice_description. Fabric would interpret it as a voice
+   description verbatim and produce a strange-sounding voice.
+   If the user gave a very short description (1-3 words like "British
+   accent"), gently prompt them to add more detail. Say: "That's a
+   good start — to get the best voice match, could you add a bit more?
+   E.g., gender, age range, and overall tone (calm / energetic /
+   authoritative)?" Then update voice_description with their fuller
+   answer.
 
 5. Resolution — ask: "Which resolution do you want?
    - 480p — $0.08 per second of output video
