@@ -7,7 +7,7 @@
 
 ## Problem Statement
 
-veed-skills today is 4 `SKILL.md` files and a thin README. For users to *find* and *install* it from their AI agent of choice (Claude Code, Codex, Cursor), the repo needs the standard discovery scaffold those hosts expect: plugin manifests, an MCP transport pointer, a proper LICENSE, conventions docs, and host-specific install paths.
+veed-skills today is 5 `SKILL.md` files and a thin README. For users to *find* and *install* it from their AI agent of choice (Claude Code, Codex, Cursor), the repo needs the standard discovery scaffold those hosts expect: plugin manifests, an MCP transport pointer, a proper LICENSE, conventions docs, and host-specific install paths.
 
 Without this layer, even users on a Veed-favourable agent can't `/plugin` their way to our skills, and our discovery surface is limited to whoever happens to find the GitHub repo. Competitors (heygen, higgsfield) ship rich distribution stacks; popular reference repos (mattpocock/skills) ship a lean version of the same idea. veed-skills currently ships neither.
 
@@ -25,16 +25,16 @@ Pitch: **"VEED Skills — Agentic AI Video Creation"** with subtitle *"Drop-in s
 
 1. **`LICENSE`** — MIT, `Copyright (c) 2026 VEED LIMITED`
 2. **`.gitignore`** — `.DS_Store`, `.env`, `__pycache__/`, common OS / editor junk
-3. **`README.md`** — full rewrite. Sections: hero (pitch + subtitle), per-skill table (4 rows: talking-head, talking-head-text, subtitles, background-removal), auth (MCP primary + curl fallback with priority table), install matrix (Claude Code / Codex / Cursor), "things to try" prompt examples, links
-4. **`CLAUDE.md`** — ~100 lines. Architecture (4 independent skills, no shared state), **mode-detection ladder** (`mcp__fal-ai__*` tools visible → MCP; else `FAL_KEY` set → curl / `fal_client`), frontmatter required fields (`name`, `description`, `version`), 300-line rule documented as aspirational (skills that grow past it migrate content to `references/`), key-decisions log
-5. **`INSTALL.md`** — host-specific install paths: `gh skill install veedana/veed-skills <skill>` (per-skill × 4), manual git clone with default skills directories per host, MCP setup snippet, curl / `FAL_KEY` fallback. Companion `INSTALL_FOR_AGENTS.md` deferred to Phase 2
+3. **`README.md`** — full rewrite. Sections: hero (pitch + subtitle), per-skill table (5 rows: talking-head, talking-head-text, subtitles, background-removal, product-pitch), auth (MCP primary + curl fallback with priority table), install matrix (Claude Code / Codex / Cursor), "things to try" prompt examples, links
+4. **`CLAUDE.md`** — ~100 lines. Architecture (4 endpoint skills + 1 workflow skill, endpoint/workflow distinction), **mode-detection ladder** (`mcp__fal-ai__*` tools visible → MCP; else `FAL_KEY` set → curl / `fal_client`), frontmatter required fields (`name`, `description`, `version`), 300-line rule documented as aspirational (skills that grow past it migrate content to `references/`), key-decisions log
+5. **`INSTALL.md`** — host-specific install paths: `gh skill install veedana/veed-skills <skill>` (per-skill × 5), manual git clone with default skills directories per host, MCP setup snippet, curl / `FAL_KEY` fallback. Companion `INSTALL_FOR_AGENTS.md` deferred to Phase 2
 
 ### Distribution manifests
 
 6. **`.claude-plugin/plugin.json`** — `name: "veed"`, `version: "1.0.0"`, MIT, repo `https://github.com/veedana/veed-skills`, keywords `[veed, video, talking-head, lipsync, subtitles, background-removal, ai-video, fal, agentic-video]`
-7. **`.claude-plugin/marketplace.json`** — one plugin entry with `skills` array of 4: `talking-head` → `/veed:talking-head`, `talking-head-text` → `/veed:talking-head-text`, `subtitles` → `/veed:subtitles`, `background-removal` → `/veed:background-removal`
-8. **`.codex-plugin/plugin.json`** — mirrors heygen's structure with veed values. `interface` block has `displayName`, `shortDescription`, `longDescription`, `developerName: "VEED"`, `category: "Design"`, `capabilities: ["Read", "Write"]`, `websiteURL: "https://veed.io"`, `defaultPrompt` (4 example prompts), `brandColor: "#96FF1A"`, and `composerIcon` + `logo` both pointing at `./assets/icon.png`
-9. **`.cursor-plugin/plugin.json`** — `$schema: "https://cursor.com/schemas/cursor-plugin/plugin.json"`, `name: "veed"`, `displayName: "VEED"`, `publisher: "VEED"`, `category: "developer-tools"`, `logo: "assets/icon.png"`, `skills: ["./veed-talking-head/", "./veed-talking-head-text/", "./veed-subtitles/", "./veed-background-removal/"]`
+7. **`.claude-plugin/marketplace.json`** — one plugin entry with `skills` array of 5: `talking-head` → `/veed:talking-head`, `talking-head-text` → `/veed:talking-head-text`, `subtitles` → `/veed:subtitles`, `background-removal` → `/veed:background-removal`, `product-pitch` → `/veed:product-pitch`
+8. **`.codex-plugin/plugin.json`** — mirrors heygen's structure with veed values. `interface` block has `displayName`, `shortDescription`, `longDescription`, `developerName: "VEED"`, `category: "Design"`, `capabilities: ["Read", "Write"]`, `websiteURL: "https://veed.io"`, `defaultPrompt` (5 example prompts), `brandColor: "#96FF1A"`, and `composerIcon` + `logo` both pointing at `./assets/icon.png`
+9. **`.cursor-plugin/plugin.json`** — `$schema: "https://cursor.com/schemas/cursor-plugin/plugin.json"`, `name: "veed"`, `displayName: "VEED"`, `publisher: "VEED"`, `category: "developer-tools"`, `logo: "assets/icon.png"`, `skills: ["./veed-talking-head/", "./veed-talking-head-text/", "./veed-subtitles/", "./veed-background-removal/", "./veed-product-pitch/"]`
 
 ### Transport
 
@@ -94,7 +94,7 @@ Deferred to follow-up branches, in rough priority order:
 - `evals/` autoresearch loop (Notion-tracked round-by-round) — separate scoped project
 - `platforms/<host>/` per-host SKILL variants — premature
 - veed CLI (Go binary à la heygen-cli, npm à la higgsfield) — months of engineering, separate brainstorm
-- Multi-skill shared state files (heygen's `AVATAR-*.md` pattern) — veed skills are independent today
+- Multi-skill shared state files (heygen's `AVATAR-*.md` pattern) — veed endpoint skills are independent today; the workflow skill (product-pitch) chains them but doesn't persist state between invocations
 
 ## Further Notes
 

@@ -3,7 +3,7 @@
   "name": "veed",
   "displayName": "VEED",
   "version": "1.0.0",
-  "description": "Agentic AI Video Creation — drop-in skills that teach your agent to make video with VEED. Talking heads (audio-driven and text-driven), styled subtitles, and background removal, powered by VEED's APIs on Fal.",
+  "description": "Agentic AI Video Creation — drop-in skills that teach your agent to make video with VEED. Talking heads (audio-driven and text-driven), product pitch videos, styled subtitles, and background removal, powered by VEED's APIs on Fal.",
   "author": {
     "name": "VEED"
   },
@@ -29,6 +29,7 @@
     "./veed-talking-head/",
     "./veed-talking-head-text/",
     "./veed-subtitles/",
-    "./veed-background-removal/"
+    "./veed-background-removal/",
+    "./veed-product-pitch/"
   ]
 }

@@ -2,14 +2,15 @@
 
 Grab a Fal API key at <https://fal.ai/dashboard/keys>, then pick the install path that matches your agent.
 
-The repo ships **four independent skills** you can install in any combination:
+The repo ships **five skills** you can install in any combination:
 
 - `veed-talking-head` — image + audio → lip-synced video
 - `veed-talking-head-text` — image + text → lip-synced video (with TTS)
 - `veed-subtitles` — video → styled, burned-in captions
 - `veed-background-removal` — video → clean subject
+- `veed-product-pitch` — product + spokesperson + script → finished product spokesperson video (workflow that chains the skills above)
 
-Skills are independent — they don't share state and don't depend on each other.
+Endpoint skills are independent — they don't share state and don't depend on each other. The workflow skill (product-pitch) chains endpoint skills but doesn't persist state between invocations.
 
 ## Option 1 — `gh skill install` (works across 12+ agents)
 
@@ -20,6 +21,7 @@ gh skill install veedana/veed-skills veed-talking-head
 gh skill install veedana/veed-skills veed-talking-head-text
 gh skill install veedana/veed-skills veed-subtitles
 gh skill install veedana/veed-skills veed-background-removal
+gh skill install veedana/veed-skills veed-product-pitch
 ```
 
 Project scope (current repo only) is the default. For user scope (every project on this machine):
@@ -50,7 +52,7 @@ Clone into your agent's skills directory:
 git clone https://github.com/veedana/veed-skills.git ~/.claude/skills/veed-skills
 ```
 
-After cloning, the four skills are auto-discovered at `veed-talking-head/SKILL.md`, `veed-talking-head-text/SKILL.md`, `veed-subtitles/SKILL.md`, and `veed-background-removal/SKILL.md`.
+After cloning, all five skills are auto-discovered at `veed-talking-head/SKILL.md`, `veed-talking-head-text/SKILL.md`, `veed-subtitles/SKILL.md`, `veed-background-removal/SKILL.md`, and `veed-product-pitch/SKILL.md`.
 
 ## Auth
 
