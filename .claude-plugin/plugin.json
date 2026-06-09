@@ -1,0 +1,23 @@
+{
+  "name": "veed",
+  "version": "1.0.0",
+  "description": "Agentic AI Video Creation — drop-in skills that teach your agent to make video with VEED. Talking heads (audio-driven and text-driven), styled subtitles, and background removal, powered by VEED's APIs on Fal.",
+  "author": {
+    "name": "VEED",
+    "url": "https://veed.io"
+  },
+  "homepage": "https://veed.io",
+  "repository": "https://github.com/veedana/veed-skills",
+  "license": "MIT",
+  "keywords": [
+    "veed",
+    "video",
+    "talking-head",
+    "lipsync",
+    "subtitles",
+    "background-removal",
+    "ai-video",
+    "fal",
+    "agentic-video"
+  ]
+}

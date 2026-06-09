@@ -1,0 +1,35 @@
+{
+  "$schema": "https://cursor.com/schemas/cursor-plugin/plugin.json",
+  "name": "veed",
+  "displayName": "VEED",
+  "version": "1.0.0",
+  "description": "Agentic AI Video Creation — drop-in skills that teach your agent to make video with VEED. Talking heads (audio-driven and text-driven), product pitch videos, styled subtitles, and background removal, powered by VEED's APIs on Fal.",
+  "author": {
+    "name": "VEED"
+  },
+  "publisher": "VEED",
+  "homepage": "https://veed.io",
+  "repository": "https://github.com/veedana/veed-skills",
+  "license": "MIT",
+  "logo": "assets/icon.png",
+  "category": "developer-tools",
+  "keywords": [
+    "veed",
+    "video",
+    "talking-head",
+    "lipsync",
+    "subtitles",
+    "background-removal",
+    "ai-video",
+    "fal",
+    "agentic-video"
+  ],
+  "tags": ["video", "ai", "lipsync", "subtitles", "creative", "fal"],
+  "skills": [
+    "./veed-talking-head/",
+    "./veed-talking-head-text/",
+    "./veed-subtitles/",
+    "./veed-background-removal/",
+    "./veed-product-pitch/"
+  ]
+}

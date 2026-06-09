@@ -1,0 +1,32 @@
+# Secrets
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+.pytest_cache/
+
+# Node (in case scripts grow here later)
+node_modules/
+
+# Editor / IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build / dist (none today, future-proofing)
+dist/
+build/
+
+# Claude Code worktrees (created by EnterWorktree)
+.claude/worktrees/
