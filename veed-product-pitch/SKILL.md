@@ -79,7 +79,22 @@ Do not skip any question, even if the user gave you a one-line brief.
      vinta, diego, ali, slay, kitty, hustle, karl, sprout, flex, mint,
      rizz, vegas) are lightweight. Default suggestion: 'glass'."
      Store as subtitle_preset.
-   - If no → set subtitle_preset to None
+     Then ALWAYS ask a follow-up about customization. Say to the user:
+     "Do you want to customize the subtitle look, or use the preset
+     defaults? You can override any of these:
+     - Position — top, center, or bottom
+     - Shadow intensity — none, min, mid, or max (improves readability
+       over busy backgrounds)
+     - Per-tier text styling — font, weight (100-900), and hex colour
+       for each of the three word-importance tiers: accessible (every
+       word), highlighted (mid-rank words), viral (top-rank hook words)
+     Any field you leave out keeps the preset's default. Say 'defaults'
+     or 'skip' if you want to use the preset as-is."
+     - If the user provides overrides → build a subtitle_customization
+       dict (see Step 6 below) and store it
+     - If the user says 'defaults', 'skip', 'no preference', or similar →
+       set subtitle_customization to None
+   - If no → set subtitle_preset to None and subtitle_customization to None
 
 ## Step 1 — Show cost estimate before proceeding
 
@@ -201,20 +216,48 @@ Follow the veed-subtitles skill workflow using video_url as the input.
 Pass:
 - video_url: the talking head video URL from Step 5
 - preset: subtitle_preset
+- customization: only if the user provided overrides
 
-Do not ask the user about language, customization, or SRT input — for
-this workflow, use auto-transcription and preset defaults. If the user
-wants more control, suggest running veed-subtitles separately afterwards.
+If subtitle_customization is set, build the dict matching the values the
+user gave. Example:
+
+subtitle_customization = {
+    "position": "bottom",
+    "shadow": "mid",
+    "text_customizations": {
+        "accessible":  {"font": "Inter", "weight": 500, "color": "#FFFFFF"},
+        "highlighted": {"font": "Inter", "weight": 700, "color": "#FFD500"},
+        "viral":       {"font": "Inter", "weight": 900, "color": "#FF2E63"}
+    }
+}
+
+Constraints:
+- position: top, center, or bottom
+- shadow: none, min, mid, or max
+- font: must be a supported Google Font — see
+  https://www.veed.io/api/v1/subtitle-renders/fonts
+- weight: 100-900
+- color: hex string (e.g. "#FFFFFF")
+
+Build the API arguments conditionally:
+
+arguments = {
+    "video_url": video_url,
+    "preset": subtitle_preset
+}
+if subtitle_customization is not None:
+    arguments["customization"] = subtitle_customization
 
 result = fal_client.subscribe(
     "veed/subtitles",
-    arguments={
-        "video_url": video_url,
-        "preset": subtitle_preset
-    },
+    arguments=arguments,
     with_logs=True
 )
 final_video_url = result["video"]["url"]
+
+Do not ask the user about language or SRT input — for this workflow,
+auto-transcription is used. If the user needs language or SRT control,
+suggest running veed-subtitles separately afterwards.
 
 Return final_video_url to the user.
 
