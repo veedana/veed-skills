@@ -61,15 +61,18 @@ If either input is already a public URL, use it directly — no upload needed.
 
 ## Step 2 — Show cost estimate before proceeding
 
-Before making the API call, calculate and show the estimated cost:
+Fetch the current rate rather than relying on memorised numbers:
 
-estimated_cost = audio_duration_seconds x price_per_second
+    genmedia pricing veed/fabric-1.0 --json
 
-Where price_per_second is $0.08 (480p) or $0.15 (720p).
+Fabric is billed per second of output video, at a rate that depends on
+resolution. Calculate and show the estimate:
+
+    estimated_cost = audio_duration_seconds x price_per_second
 
 Show the estimate to the user and ask them to confirm before proceeding.
-Example: "This will cost approximately $1.50 for a 10-second video at 720p.
-Shall I proceed?"
+Example (indicative rates $0.08/sec at 480p, $0.15/sec at 720p): "This will
+cost approximately $1.50 for a 10-second video at 720p. Shall I proceed?"
 
 ## Step 3 — Generate the video
 
@@ -120,6 +123,8 @@ interrupted, resume here with the same `request_id`; do NOT re-run Step 3.
 - 500 error: model error on Fal's side — retry once before giving up
 
 ## Pricing
+Run `genmedia pricing veed/fabric-1.0 --json` for the authoritative current
+rate. Indicative rates at time of writing:
 - 480p: $0.08 per second of output video
 - 720p: $0.15 per second of output video
 - Maximum: 30 seconds per generation

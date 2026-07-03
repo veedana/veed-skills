@@ -83,7 +83,7 @@ Once installed, try these prompts:
 
 ## Pricing
 
-Per-skill costs (charged by Fal — these skills add no markup):
+Per-skill costs (charged by Fal — these skills add no markup). These are indicative; the skills fetch the authoritative current rate with `genmedia pricing <endpoint> --json` before every run:
 
 | Skill | Cost |
 |---|---|

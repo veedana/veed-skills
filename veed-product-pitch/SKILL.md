@@ -124,7 +124,16 @@ Do not skip any question, even if the user gave you a one-line brief.
 
 ## Step 1 — Show cost estimate before proceeding
 
-Estimate the total cost upfront and ask the user to confirm.
+Estimate the total cost upfront and ask the user to confirm. Fetch current
+rates for each endpoint this run will use rather than relying on memorised
+numbers:
+
+    genmedia pricing fal-ai/gemini-25-flash-image --json   # image gen / composite
+    genmedia pricing veed/fabric-1.0 --json                # or veed/fabric-1.0/text
+    genmedia pricing veed/subtitles --json                 # only if subtitles
+
+The indicative rates below are for illustration — use the live rates in the
+actual estimate.
 
 Cost components:
 - Nano Banana product generation: $0.039 (only if user described the product)
@@ -313,7 +322,9 @@ Return final_video_url to the user.
   / subtitles) and retry that step only — don't restart the whole flow.
 
 ## Pricing
-This skill chains multiple models. Per-call costs:
+This skill chains multiple models. Run `genmedia pricing <endpoint> --json`
+for each endpoint for authoritative current rates. Indicative per-call costs
+at time of writing:
 - Nano Banana (generation): $0.039 per image
 - Nano Banana (edit/composite): $0.039 per call
 - Fabric 1.0 (audio): $0.08/sec at 480p, $0.15/sec at 720p

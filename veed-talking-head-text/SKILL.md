@@ -68,17 +68,20 @@ upload needed.
 
 ## Step 2 — Show cost estimate before proceeding
 
-Estimate the output duration from the script length
-(roughly 130 words per minute as a baseline).
+Fetch the current rate rather than relying on memorised numbers:
 
-estimated_seconds = word_count / 130 x 60
-estimated_cost = estimated_seconds x price_per_second
+    genmedia pricing veed/fabric-1.0/text --json
 
-Where price_per_second is $0.08 (480p) or $0.15 (720p).
+Estimate the output duration from the script length (roughly 130 words per
+minute as a baseline), then apply the per-second rate:
+
+    estimated_seconds = word_count / 130 x 60
+    estimated_cost = estimated_seconds x price_per_second
 
 Show the estimate and ask the user to confirm before proceeding.
-Example: "This script (~20 words) will take roughly 9 seconds and cost
-approximately $0.72 at 720p. Shall I proceed?"
+Example (indicative rates $0.08/sec at 480p, $0.15/sec at 720p): "This script
+(~20 words) will take roughly 9 seconds and cost approximately $0.72 at 720p.
+Shall I proceed?"
 
 ## Step 3 — Generate the video
 
@@ -134,6 +137,8 @@ interrupted, resume here with the same `request_id`; do NOT re-run Step 3.
 - 500 error: model error on Fal's side — retry once before giving up
 
 ## Pricing
+Run `genmedia pricing veed/fabric-1.0/text --json` for the authoritative
+current rate. Indicative rates at time of writing:
 - 480p: $0.08 per second of output video
 - 720p: $0.15 per second of output video
 - Maximum: 30 seconds per generation

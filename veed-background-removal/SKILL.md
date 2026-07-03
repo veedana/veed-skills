@@ -66,16 +66,23 @@ directly — no upload needed.
 
 ## Step 3 — Show cost estimate before proceeding
 
-Before making the API call, estimate and show the cost:
+Fetch the current rate rather than relying on memorised numbers (use the
+endpoint variant chosen in Step 1):
+
+    genmedia pricing veed/video-background-removal --json
+
+This model is billed per 30 frames, at a rate that depends on the refine
+setting. Estimate and show the cost:
 
 - Get video duration in seconds (use ffprobe or ask the user)
 - Assume 30fps unless the user specifies otherwise
 - Estimated frames = duration_seconds x fps
-- Estimated cost = (frames / 30) x $0.0225 (Refine ON) or x $0.012 (Refine OFF)
+- Estimated cost = (frames / 30) x price_per_30_frames
 
 Show the estimate to the user and ask them to confirm before proceeding.
-Example: "This will cost approximately $0.45 for a 10-second video at 30fps
-with Refine ON. Shall I proceed?"
+Example (indicative rates $0.0225 per 30 frames with Refine ON, $0.012 OFF):
+"This will cost approximately $0.45 for a 10-second video at 30fps with
+Refine ON. Shall I proceed?"
 
 ## Step 4 — Remove the background
 
@@ -129,6 +136,9 @@ interrupted, resume here with the same `request_id`; do NOT re-run Step 4.
 - 500 error: model error on Fal's side — retry once before giving up
 
 ## Pricing
+Run `genmedia pricing veed/video-background-removal --json` (or the fast /
+green-screen variant) for the authoritative current rate. Indicative rates
+at time of writing:
 - Refine ON: $0.0225 per 30 frames
 - Refine OFF: $0.012 per 30 frames
 

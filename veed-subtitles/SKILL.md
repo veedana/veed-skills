@@ -135,18 +135,24 @@ Constraints:
 
 ## Step 3 — Show cost estimate before proceeding
 
-Before making the API call, estimate and show the cost:
+Fetch the current base rate rather than relying on memorised numbers:
+
+    genmedia pricing veed/subtitles --json
+
+Subtitles are billed per minute of input video, with resolution and preset
+multipliers. Estimate and show the cost:
 - Get video duration in minutes (use ffprobe or ask the user)
-- Base rate = $0.10 per minute
+- Base rate = per-minute rate from `genmedia pricing`
 - Resolution multiplier: 2x if video is above 1080p, else 1x
 - Preset multiplier: 2x if preset is dynamic (glass, whisper, glide,
   glide2, fusion, terminal, handwritten), else 1x
-- Estimated cost = duration_minutes x $0.10 x resolution_mult x preset_mult
+- Estimated cost = duration_minutes x base_rate x resolution_mult x preset_mult
 - Minimum charge: 1 minute
 
 Show the estimate to the user and ask them to confirm before proceeding.
-Example: "This will cost approximately $0.40 for a 2-minute 1080p video
-with the 'glass' preset (dynamic, 2x multiplier). Shall I proceed?"
+Example (indicative base rate $0.10/min): "This will cost approximately $0.40
+for a 2-minute 1080p video with the 'glass' preset (dynamic, 2x multiplier).
+Shall I proceed?"
 
 ## Step 4 — Render the subtitled video
 
@@ -206,6 +212,8 @@ interrupted, resume here with the same `request_id`; do NOT re-run Step 4.
 - 500 error: model error on Fal's side — retry once before giving up
 
 ## Pricing
+Run `genmedia pricing veed/subtitles --json` for the authoritative current
+base rate. Indicative rates at time of writing:
 - Base rate: $0.10 per minute of input video
 - Resolution multiplier: 2x for video above 1080p
 - Preset multiplier: 2x for dynamic presets (glass, whisper, glide,
