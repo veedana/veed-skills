@@ -64,7 +64,7 @@ If the user gave a local file path, upload it to Fal's CDN first:
 Copy the returned "url". If the input is already a public URL, use it
 directly — no upload needed.
 
-## Step 3 — Show cost estimte before proceeding
+## Step 3 — Show cost estimate before proceeding
 
 Before making the API call, estimate and show the cost:
 
