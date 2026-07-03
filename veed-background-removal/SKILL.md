@@ -12,8 +12,9 @@ description: >
 # VEED Background Removal
 
 ## What this skill does
-Removes the background from a video, returning just the subject. Three modes:
-standard, fast, and green screen.
+Removes the background from a video, returning just the subject — as a
+transparent WebM (default) or an MP4 on black. Three modes: standard, fast,
+and green screen.
 
 ## Before you start
 Setup (genmedia CLI + Fal key), the async execution pattern, uploading local
@@ -29,42 +30,72 @@ Collect ALL of the following before proceeding:
    a public URL. Accepted formats: MP4, MOV, WEBM, MKV, AVI
    Tip on Mac: right-click file in Finder → hold Option → Copy as Pathname
 
-2. Mode — which fits their need (sets the endpoint):
+2. Mode — which fits their need (sets the endpoint AND which options apply):
    - Standard — best quality. Default. → `veed/video-background-removal`
    - Fast — quicker, for high volume or testing. → `.../fast`
-   - Green screen — for green screen footage. → `.../green-screen`
+   - Green screen — for footage shot on a green/blue screen. → `.../green-screen`
 
-3. Refine foreground edges — `refine_foreground_edges`:
-   - ON (`true`) — cleaner edges, higher cost. Default.
-   - OFF (`false`) — faster, lower cost.
+3. Output codec — `output_codec`, applies to all modes:
+   - `vp9` (default) — WebM with a transparent alpha channel. Use when the
+     subject will be composited onto a new background.
+   - `h264` — MP4, no transparency (subject on black). Use for direct playback.
+
+4. Mode-specific options:
+   - Standard / Fast:
+     - `refine_foreground_edges` (default `true`) — cleaner edges, higher cost;
+       `false` is faster and cheaper.
+     - `subject_is_person` (default `true`) — set `false` if the subject isn't
+       a person (product, animal, object).
+   - Green screen (note: these two do NOT apply — the endpoint has neither):
+     - `spill_suppression_strength` (0–1, default `0.8`) — how aggressively to
+       remove green/blue spill on the subject's edges. Raise toward 1 for heavy
+       spill; lower if edges look eroded.
 
 ## Step 1 — Estimate cost and confirm
 
 Fetch the rate for the chosen endpoint variant
-(`genmedia pricing veed/video-background-removal --json`). Billed per 30
-frames, at a rate that depends on the refine setting:
+(`genmedia pricing <endpoint> --json`). Billed per 30 frames. For standard/fast
+the rate depends on `refine_foreground_edges`; green-screen has no refine
+setting, so price it from its own `genmedia pricing`.
 
 - Get video duration in seconds (use ffprobe or ask the user)
 - Assume 30fps unless the user specifies otherwise
 - Estimated cost = (duration_seconds x fps / 30) x price_per_30_frames
 
-Show the estimate and get confirmation. Example (indicative $0.0225/30f Refine
-ON, $0.012 OFF): "~$0.45 for a 10-second 30fps video, Refine ON. Proceed?"
+Show the estimate and get confirmation. Example (indicative standard/fast
+rate $0.0225/30f refine ON, $0.012 OFF): "~$0.45 for a 10-second 30fps clip,
+refine ON. Proceed?"
 
 ## Step 2 — Remove the background
 
 Upload the local video (see ../COMMON.md), then follow the async execution
-pattern in ../COMMON.md (schema → run `--async` → poll → download). Use the
-endpoint variant from the user's mode choice:
+pattern in ../COMMON.md (schema → run `--async` → poll → download). The flags
+differ by mode — pass only the ones that apply.
+
+Standard / Fast:
 
     genmedia run veed/video-background-removal \
       --video_url "<video_url>" \
       --refine_foreground_edges true \
+      --subject_is_person true \
+      --output_codec vp9 \
       --async \
       --json
 
-Set `--refine_foreground_edges` to `false` if the user chose OFF. Download the
-result to `./outputs/background-removal/`, and return both the path and the URL.
+Green screen (no `refine_foreground_edges` / `subject_is_person`):
+
+    genmedia run veed/video-background-removal/green-screen \
+      --video_url "<video_url>" \
+      --spill_suppression_strength 0.8 \
+      --output_codec vp9 \
+      --async \
+      --json
+
+Adjust per the user's choices (`--output_codec h264`,
+`--refine_foreground_edges false`, `--subject_is_person false`,
+`--spill_suppression_strength <0-1>`), swap in the fast endpoint if chosen,
+then download the result to `./outputs/background-removal/` and return both
+the path and the URL.
 
 ## Errors
 Common errors (401 / 422 / 429 / 500) are in ../COMMON.md. Here, a 422 usually
@@ -72,8 +103,9 @@ means the video is inaccessible or in an unsupported format.
 
 ## Pricing
 Run `genmedia pricing veed/video-background-removal --json` (or the fast /
-green-screen variant) for the authoritative current rate. Indicative: Refine
-ON $0.0225 per 30 frames, Refine OFF $0.012 per 30 frames.
+green-screen variant) for the authoritative current rate. Indicative
+(standard/fast): refine ON $0.0225 per 30 frames, refine OFF $0.012 per 30
+frames. Green-screen has no refine setting — price it from its own endpoint.
 
 Model pages:
 - Standard: https://fal.ai/models/veed/video-background-removal
