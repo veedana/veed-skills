@@ -19,9 +19,16 @@ lips sync to the audio. Maximum duration: 30 seconds per generation.
 Powered by VEED's Fabric 1.0 model on Fal.
 
 ## Before you start
-The user needs:
-- A Fal API key — get one free at https://fal.ai/dashboard/keys
-- Set it as an environment variable: export FAL_KEY=your_key_here
+These skills run through the genmedia CLI, which handles model discovery,
+file upload, execution, and downloads against Fal.
+
+- Install it once — see https://github.com/fal-ai-community/genmedia-cli
+- Configure your Fal API key (get one free at https://fal.ai/dashboard/keys):
+      genmedia setup
+  Or non-interactively (agents / CI):
+      genmedia setup --non-interactive --api-key "$FAL_KEY"
+
+All commands below assume `genmedia` is on your PATH.
 
 ## What to ask the user for
 
@@ -42,16 +49,15 @@ Collect ALL of the following before proceeding:
 
 ## Step 1 — Handle file inputs
 
-If the user provided a local file path for the image, upload it to Fal:
+If the user gave a local file path for the image, upload it to Fal's CDN:
 
-import fal_client
-image_url = fal_client.upload_file(image_path)
+    genmedia upload /path/to/image.jpg --json
 
-If the user provided a local file path for the audio, upload it:
+Copy the returned "url". Do the same for the audio if it's a local file:
 
-audio_url = fal_client.upload_file(audio_path)
+    genmedia upload /path/to/audio.mp3 --json
 
-If either is already a public URL, use it directly — no upload needed.
+If either input is already a public URL, use it directly — no upload needed.
 
 ## Step 2 — Show cost estimate before proceeding
 
@@ -67,33 +73,23 @@ Shall I proceed?"
 
 ## Step 3 — Generate the video
 
-Use fal_client.subscribe() to handle progress and avoid timeouts:
+Run Fabric 1.0 with the image and audio URLs:
 
-import fal_client
+    genmedia run veed/fabric-1.0 \
+      --image_url "<image_url>" \
+      --audio_url "<audio_url>" \
+      --resolution 480p \
+      --json
 
-def on_queue_update(update):
-    if hasattr(update, "logs"):
-        for log in update.logs:
-            print(log["message"])
+Set `--resolution` to `720p` if the user chose it.
 
-result = fal_client.subscribe(
-    "veed/fabric-1.0",
-    arguments={
-        "image_url": image_url,
-        "audio_url": audio_url,
-        "resolution": resolution
-    },
-    with_logs=True,
-    on_queue_update=on_queue_update
-)
-
-print(result["video"]["url"])
+The result JSON contains `video.url` — return it to the user.
 
 ## After the call
 - Return the video.url to the user
 - Warn the user that Fal URLs expire after ~24 hours — download locally
   if they want to keep it
-- 401 error: FAL_KEY is invalid or not set
+- 401 / auth error: Fal key not configured — run `genmedia setup`
 - 422 error: image or audio not accessible, wrong format, or audio too long
 - 429 error: rate limit — wait a moment and retry
 - 500 error: model error on Fal's side — retry once before giving up

@@ -26,7 +26,6 @@ veed-skills/
 ├── CLAUDE.md                       # This file. Conventions, mode-detection ladder, decisions.
 ├── LICENSE                         # MIT
 ├── docs/                           # PRDs / ADRs / design notes (0001-, 0002-, ...)
-├── .mcp.json                       # Fal MCP server config (Bearer FAL_KEY)
 ├── .claude-plugin/
 │   ├── plugin.json                 # Claude Code plugin manifest
 │   └── marketplace.json            # Marketplace listing with 5 skills
@@ -41,14 +40,20 @@ veed-skills/
 
 There is **no root SKILL.md**. Endpoint skills are independent; the workflow skill (product-pitch) chains them but shares no state between invocations.
 
-## Mode-detection ladder (transport)
+## Transport: genmedia CLI
 
-Skills route the actual Fal API call through one of two transports. **Detect at runtime, in this order**:
+Skills route every Fal call through the **genmedia CLI** (`fal-ai-community/genmedia-cli`) — the same execution layer the broader fal.ai community skills use. It handles model discovery, schema inspection, file upload, execution (sync or async), status polling, pricing, and downloads.
 
-1. **Fal MCP** — if tools matching `mcp__fal-ai__*` are visible in the toolset (the agent has connected the Fal remote MCP via `claude mcp add ... https://mcp.fal.ai/mcp ...`), prefer it. Call `mcp__fal-ai__run` with `model: "veed/<slug>"` and the appropriate `arguments`.
-2. **Direct API** (`fal_client` / curl) — if MCP is unavailable but `FAL_KEY` is set in the environment, fall back to `fal_client.subscribe("veed/<slug>", arguments={...})` for Python-capable agents, or curl against `https://fal.run/veed/<slug>` with `Authorization: Key $FAL_KEY` for everyone else.
+The commands skills rely on:
 
-Skills should never call `api.fal.ai` directly with a hand-rolled HTTP client — go through `fal_client` or the documented `fal.run` REST endpoints.
+- `genmedia setup` — one-time auth (stores the Fal key, or reads `FAL_KEY`)
+- `genmedia upload <path> --json` — push a local file to Fal's CDN, returns a URL
+- `genmedia schema <endpoint> --json` — inspect a model's exact input fields before running
+- `genmedia run <endpoint> --<field> <value> --json` — execute; add `--async` for a `request_id` to poll
+- `genmedia status <endpoint> <request_id> --json` / `--download <template>` — poll or fetch an async job
+- `genmedia pricing <endpoint> --json` — current price for a model
+
+Endpoints are the real Fal slugs (`veed/fabric-1.0`, `veed/subtitles`, `veed/video-background-removal`, etc.). Skills should not hand-roll HTTP against `fal.run` / `api.fal.ai`, nor embed Python `fal_client` code — go through genmedia so discovery, schema, and downloads stay consistent.
 
 ## Frontmatter required fields
 
@@ -89,10 +94,10 @@ Each skill must be installable on its own via `gh skill install veedana/veed-ski
 
 Validated decisions that should not be revisited without new data:
 
-1. **Curl/`fal_client`-first, no veed CLI.** Building a veed-branded CLI (à la heygen-cli, higgsfield) is months of engineering. Defer indefinitely; the scaffold leaves seams (mode-detection ladder, `.mcp.json`) for a future CLI to slot in without rewrites.
-2. **Fal MCP is the preferred transport.** Official, free, hosted on Vercel at `https://mcp.fal.ai/mcp`. Bearer auth using `FAL_KEY`. We pay nothing; users pay only for model runs at the same rates as direct API calls.
-3. **Fal MCP exposes a generic surface, not typed per-model tools.** 9 tools (`search`, `run`, `chain`) over the whole Fal catalog. Skills' calls look like `mcp__fal-ai__run` with `model: "veed/subtitles"`, not `mcp__fal-ai__veed_subtitles`.
-4. **Fal MCP OAuth is not yet live.** Until Fal ships OAuth, `claude.ai` Custom Connectors and Claude Desktop (which require OAuth) cannot use it. Claude Code, Cursor, Codex, Windsurf work today via the Bearer-key path.
+1. **genmedia CLI is the transport, no veed CLI.** Building a veed-branded CLI (à la heygen-cli, higgsfield) is months of engineering. Instead, skills run on the community `genmedia` CLI, which already covers discovery, schema, upload, run, status, pricing, and downloads — and which the wider fal.ai community skills route to (its `model-routing` skill already defaults talking-head / UGC to `veed/fabric-1.0` and `veed/fabric-1.0/text`). We ride that ecosystem rather than reinventing it.
+2. **No MCP / no inline `fal_client`.** Earlier scaffold used a Fal MCP → `fal_client` → curl ladder. Dropped: genmedia is one consistent path that works for any agent that can shell out, needs no per-host MCP config, and keeps schema/pricing/downloads uniform. `.mcp.json` was removed with this decision.
+3. **Endpoints are real Fal slugs.** genmedia `run`/`schema`/`pricing` take the model slug directly (`veed/subtitles`, `veed/fabric-1.0`, …) — the same IDs documented on each model's Fal page.
+4. **Inspect schema, don't guess fields.** Fal model schemas change. Skills should confirm exact input field names via `genmedia schema <endpoint> --json` rather than trusting a hard-coded argument list, and pull live cost via `genmedia pricing` rather than embedding prices that silently drift.
 5. **No process overhead in Phase 1.** No CI, no release-please, no `CONTRIBUTING.md`, no `CODEOWNERS`, no `INSTALL_FOR_AGENTS.md`, no `setup` script. Add only when there's evidence one is needed.
 6. **Brand assets ship in `assets/`.** `assets/icon.png` (515×512) is referenced as both `composerIcon` and `logo` in `.codex-plugin/plugin.json` and as `logo` in `.cursor-plugin/plugin.json`. Brand colour is `#96FF1A` (VEED green). A dedicated wordmark logo can replace the icon-for-logo reuse later if marketplace detail pages need it.
 7. **Endpoint skills are independent — no shared state files.** Unlike heygen's `AVATAR-<NAME>.md` pattern that coordinates avatar→video skills, veed's endpoint skills (talking-head, talking-head-text, subtitles, background-removal) are stateless and independent. Workflow skills (product-pitch) chain endpoint skills together in a single invocation but don't persist state between runs — no cross-invocation coordination files. If a future workflow needs shared state across invocations, revisit.

@@ -20,9 +20,16 @@ Maximum generation: 30 seconds of output video.
 Powered by VEED's Fabric 1.0 Text model on Fal.
 
 ## Before you start
-The user needs:
-- A Fal API key — get one free at https://fal.ai/dashboard/keys
-- Set it as an environment variable: export FAL_KEY=your_key_here
+These skills run through the genmedia CLI, which handles model discovery,
+file upload, execution, and downloads against Fal.
+
+- Install it once — see https://github.com/fal-ai-community/genmedia-cli
+- Configure your Fal API key (get one free at https://fal.ai/dashboard/keys):
+      genmedia setup
+  Or non-interactively (agents / CI):
+      genmedia setup --non-interactive --api-key "$FAL_KEY"
+
+All commands below assume `genmedia` is on your PATH.
 
 ## What to ask the user for
 
@@ -42,8 +49,8 @@ IMPORTANT: Collect ALL four inputs before proceeding. Do not skip any.
    and authoritative tone'. If you have no preference, just say 'auto'
    and VEED will generate a voice based on the image."
    - If the user provides a description → store it as voice_description
-   - If the user says 'auto', 'skip', 'no preference', or similar → set
-     voice_description to None and do NOT pass it in the API call
+   - If the user says 'auto', 'skip', 'no preference', or similar → do NOT
+     pass a voice_description flag in the run command
 
 4. Resolution — ask which the user prefers:
    - 480p — $0.08 per second of output video
@@ -52,12 +59,12 @@ IMPORTANT: Collect ALL four inputs before proceeding. Do not skip any.
 
 ## Step 1 — Handle image input
 
-If the user provided a local file path, upload it to Fal:
+If the user gave a local file path, upload it to Fal's CDN first:
 
-import fal_client
-image_url = fal_client.upload_file(image_path)
+    genmedia upload /path/to/image.jpg --json
 
-If already a public URL, use it directly — no upload needed.
+Copy the returned "url". If already a public URL, use it directly — no
+upload needed.
 
 ## Step 2 — Show cost estimate before proceeding
 
@@ -75,39 +82,27 @@ approximately $0.72 at 720p. Shall I proceed?"
 
 ## Step 3 — Generate the video
 
-Build the arguments dict conditionally — only include voice_description
-if the user provided one (not None):
+Run Fabric 1.0 Text. Include `--voice_description` ONLY if the user gave one:
 
-import fal_client
+    genmedia run veed/fabric-1.0/text \
+      --image_url "<image_url>" \
+      --text "<script text>" \
+      --resolution 480p \
+      --json
 
-arguments = {
-    "image_url": image_url,
-    "text": script_text,
-    "resolution": resolution
-}
+If the user provided a voice description, add:
 
-if voice_description is not None:
-    arguments["voice_description"] = voice_description
+      --voice_description "<voice description>"
 
-def on_queue_update(update):
-    if hasattr(update, "logs"):
-        for log in update.logs:
-            print(log["message"])
+Set `--resolution` to `720p` if the user chose it.
 
-result = fal_client.subscribe(
-    "veed/fabric-1.0/text",
-    arguments=arguments,
-    with_logs=True,
-    on_queue_update=on_queue_update
-)
-
-print(result["video"]["url"])
+The result JSON contains `video.url` — return it to the user.
 
 ## After the call
 - Return the video.url to the user
 - Warn the user that Fal URLs expire after ~24 hours — download locally
   if they want to keep it
-- 401 error: FAL_KEY is invalid or not set
+- 401 / auth error: Fal key not configured — run `genmedia setup`
 - 422 error: image not accessible, wrong format, or script too long
 - 429 error: rate limit — wait a moment and retry
 - 500 error: model error on Fal's side — retry once before giving up

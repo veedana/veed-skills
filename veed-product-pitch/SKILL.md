@@ -30,9 +30,16 @@ Generates a finished product spokesperson video in one flow:
 Maximum output: 30 seconds of talking head video (Fabric model limit).
 
 ## Before you start
-The user needs:
-- A Fal API key — get one free at https://fal.ai/dashboard/keys
-- Set it as an environment variable: export FAL_KEY=your_key_here
+This workflow runs through the genmedia CLI, which handles model discovery,
+file upload, execution, and downloads against Fal.
+
+- Install it once — see https://github.com/fal-ai-community/genmedia-cli
+- Configure your Fal API key (get one free at https://fal.ai/dashboard/keys):
+      genmedia setup
+  Or non-interactively (agents / CI):
+      genmedia setup --non-interactive --api-key "$FAL_KEY"
+
+All commands below assume `genmedia` is on your PATH.
 
 ## What to ask the user for
 
@@ -105,7 +112,7 @@ Do not skip any question, even if the user gave you a one-line brief.
      Any field you leave out keeps the preset's default. Say 'defaults'
      or 'skip' if you want to use the preset as-is."
      - If the user provides overrides → build a subtitle_customization
-       dict (see Step 6 below) and store it
+       JSON object (see Step 6 below) and store it
      - If the user says 'defaults', 'skip', 'no preference', or similar →
        set subtitle_customization to None
    - If no → set subtitle_preset to None and subtitle_customization to None
@@ -142,108 +149,96 @@ Wait for explicit confirmation before continuing.
 
 ## Step 2 — Get or generate the product image
 
-If product_image_path is set (user uploaded):
-    product_image_url = fal_client.upload_file(product_image_path)
+If product_image_path is set (user uploaded), upload it and keep the URL:
 
-Else (user described):
-    import fal_client
-    result = fal_client.subscribe(
-        "fal-ai/gemini-25-flash-image",
-        arguments={
-            "prompt": product_prompt,
-            "num_images": 1
-        },
-        with_logs=True
-    )
-    product_image_url = result["images"][0]["url"]
+    genmedia upload /path/to/product.jpg --json
+
+Else (user described), generate one with Nano Banana:
+
+    genmedia run fal-ai/gemini-25-flash-image \
+      --prompt "<product_prompt>" \
+      --num_images 1 \
+      --json
+
+Take the first image URL from the result as product_image_url.
 
 ## Step 3 — Get or generate the spokesperson image
 
-If spokesperson_image_path is set (user uploaded):
-    spokesperson_image_url = fal_client.upload_file(spokesperson_image_path)
+If spokesperson_image_path is set (user uploaded), upload it and keep the URL:
 
-Else (user described):
-    result = fal_client.subscribe(
-        "fal-ai/gemini-25-flash-image",
-        arguments={
-            "prompt": spokesperson_prompt + ", clear face, looking at camera, "
-                      "professional photo, plain background",
-            "num_images": 1
-        },
-        with_logs=True
-    )
-    spokesperson_image_url = result["images"][0]["url"]
+    genmedia upload /path/to/spokesperson.jpg --json
+
+Else (user described), generate one with Nano Banana:
+
+    genmedia run fal-ai/gemini-25-flash-image \
+      --prompt "<spokesperson_prompt>, clear face, looking at camera, professional photo, plain background" \
+      --num_images 1 \
+      --json
+
+Take the first image URL from the result as spokesperson_image_url.
 
 ## Step 4 — Composite the spokesperson holding the product
 
-Use Nano Banana's edit endpoint with both images and a fixed prompt:
+Use Nano Banana's edit endpoint with both images and a fixed prompt.
+Pass both URLs on the `--image_urls` flag as a JSON array:
 
-result = fal_client.subscribe(
-    "fal-ai/gemini-25-flash-image/edit",
-    arguments={
-        "image_urls": [spokesperson_image_url, product_image_url],
-        "prompt": "Make the model hold this product in their hand. "
-                  "Keep the spokesperson's face clearly visible and "
-                  "looking at the camera. Natural pose, well-lit."
-    },
-    with_logs=True
-)
-composite_image_url = result["images"][0]["url"]
+    genmedia run fal-ai/gemini-25-flash-image/edit \
+      --image_urls '["<spokesperson_image_url>", "<product_image_url>"]' \
+      --prompt "Make the model hold this product in their hand. Keep the spokesperson's face clearly visible and looking at the camera. Natural pose, well-lit." \
+      --json
+
+Take the first image URL from the result as composite_image_url.
 
 ## Step 5 — Generate the talking head video
 
 Branch based on mode:
 
-If mode == "audio":
-    audio_url = fal_client.upload_file(audio_path)
-    result = fal_client.subscribe(
-        "veed/fabric-1.0",
-        arguments={
-            "image_url": composite_image_url,
-            "audio_url": audio_url,
-            "resolution": resolution
-        },
-        with_logs=True
-    )
+If mode == "audio", upload the audio and run Fabric 1.0:
 
-If mode == "text":
-    arguments = {
-        "image_url": composite_image_url,
-        "text": script_text,
-        "resolution": resolution
-    }
-    if voice_description is not None:
-        arguments["voice_description"] = voice_description
-    result = fal_client.subscribe(
-        "veed/fabric-1.0/text",
-        arguments=arguments,
-        with_logs=True
-    )
+    genmedia upload /path/to/audio.mp3 --json
 
-video_url = result["video"]["url"]
+    genmedia run veed/fabric-1.0 \
+      --image_url "<composite_image_url>" \
+      --audio_url "<audio_url>" \
+      --resolution 480p \
+      --json
+
+If mode == "text", run Fabric 1.0 Text (add `--voice_description` only if
+voice_description is not None):
+
+    genmedia run veed/fabric-1.0/text \
+      --image_url "<composite_image_url>" \
+      --text "<script_text>" \
+      --resolution 480p \
+      --json
+
+Set `--resolution` to `720p` if the user chose it. Take `video.url` from
+the result as video_url.
 
 If subtitle_preset is None: return video_url to the user and stop here.
 
 ## Step 6 — Add subtitles (only if subtitle_preset is set)
 
-Follow the veed-subtitles skill workflow using video_url as the input.
-Pass:
-- video_url: the talking head video URL from Step 5
-- preset: subtitle_preset
-- customization: only if the user provided overrides
+Run the subtitles endpoint using video_url as the input. Add
+`--customization` only if the user provided overrides:
 
-If subtitle_customization is set, build the dict matching the values the
-user gave. Example:
+    genmedia run veed/subtitles \
+      --video_url "<video_url>" \
+      --preset "<subtitle_preset>" \
+      --json
 
-subtitle_customization = {
-    "position": "bottom",
-    "shadow": "mid",
-    "text_customizations": {
+If subtitle_customization is set, build the JSON object matching the values
+the user gave and pass it as `--customization '<JSON>'`. Example:
+
+    {
+      "position": "bottom",
+      "shadow": "mid",
+      "text_customizations": {
         "accessible":  {"font": "Inter", "weight": 500, "color": "#FFFFFF"},
         "highlighted": {"font": "Inter", "weight": 700, "color": "#FFD500"},
         "viral":       {"font": "Inter", "weight": 900, "color": "#FF2E63"}
+      }
     }
-}
 
 Constraints:
 - position: top, center, or bottom
@@ -253,21 +248,7 @@ Constraints:
 - weight: 100-900
 - color: hex string (e.g. "#FFFFFF")
 
-Build the API arguments conditionally:
-
-arguments = {
-    "video_url": video_url,
-    "preset": subtitle_preset
-}
-if subtitle_customization is not None:
-    arguments["customization"] = subtitle_customization
-
-result = fal_client.subscribe(
-    "veed/subtitles",
-    arguments=arguments,
-    with_logs=True
-)
-final_video_url = result["video"]["url"]
+Take `video.url` from the result as final_video_url.
 
 Do not ask the user about language or SRT input — for this workflow,
 auto-transcription is used. If the user needs language or SRT control,
@@ -279,7 +260,7 @@ Return final_video_url to the user.
 - Return the final video URL to the user
 - Warn the user that Fal URLs expire after ~24 hours — download the
   file locally if they want to keep it
-- 401 error: FAL_KEY is invalid or not set
+- 401 / auth error: Fal key not configured — run `genmedia setup`
 - 422 error: an input image/audio is not accessible, in a bad format,
   or the audio/script exceeds Fabric's 30-second cap
 - 429 error: rate limit — wait a moment and retry

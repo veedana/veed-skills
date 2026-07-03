@@ -28,9 +28,25 @@ Five skills — four endpoint skills and one workflow skill — that work standa
 
 ## Install
 
+### 1. Get a Fal API key
+
+Grab one free at <https://fal.ai/dashboard/keys>.
+
+### 2. Install the genmedia CLI
+
+The skills run through the [genmedia CLI](https://github.com/fal-ai-community/genmedia-cli) — it handles model discovery, file upload, execution, and downloads against Fal. Install it, then configure your key:
+
+```bash
+genmedia setup
+# non-interactive (agents / CI):
+genmedia setup --non-interactive --api-key "$FAL_KEY"
+```
+
+### 3. Install the skills
+
 The repo ships five skills you can install independently. Pick whichever subset you need.
 
-### Option 1 — `gh skill install` (Claude Code, Cursor, Codex, Gemini CLI, Copilot, and more)
+**Option A — `gh skill install`** (Claude Code, Cursor, Codex, Gemini CLI, Copilot, and more):
 
 ```bash
 gh skill install veedana/veed-skills veed-talking-head
@@ -42,7 +58,7 @@ gh skill install veedana/veed-skills veed-product-pitch
 
 Requires GitHub CLI v2.90+. The CLI writes to the right directory for your agent automatically. See [INSTALL.md](./INSTALL.md) for per-host paths and full options.
 
-### Option 2 — Git clone
+**Option B — Git clone:**
 
 ```bash
 git clone https://github.com/veedana/veed-skills.git ~/.claude/skills/veed-skills
@@ -50,33 +66,7 @@ git clone https://github.com/veedana/veed-skills.git ~/.claude/skills/veed-skill
 
 After cloning, all five skills are auto-discovered at `veed-talking-head/SKILL.md`, `veed-talking-head-text/SKILL.md`, `veed-subtitles/SKILL.md`, `veed-background-removal/SKILL.md`, and `veed-product-pitch/SKILL.md`.
 
-## Authentication
-
-Two paths, in order of preference: **MCP** (preferred) → **direct API** with `FAL_KEY`.
-
-| Priority | Mode | Trigger | Best for |
-|---|---|---|---|
-| 1 | **Fal MCP** (Bearer auth) | `mcp__fal-ai__*` tools visible in toolset | Claude Code, Cursor, Codex |
-| 2 | **Direct API** (`fal_client` / curl) | `FAL_KEY` env var set | Any agent that can shell out or run Python |
-
-Both use the same `FAL_KEY` from <https://fal.ai/dashboard/keys>. You're billed per model run at standard Fal rates either way — the MCP server itself is free.
-
-### Connect Fal MCP (Claude Code example)
-
-```bash
-claude mcp add --transport http fal-ai https://mcp.fal.ai/mcp \
-  --header "Authorization: Bearer $FAL_KEY"
-```
-
-> **Caveat:** Fal's MCP currently supports API-key Bearer auth only. OAuth is "coming soon" per Fal — until it ships, `claude.ai` Custom Connectors and Claude Desktop (which require OAuth) can't reach it. Claude Code, Cursor, Codex, Windsurf are unaffected.
-
-### Direct API fallback
-
-```bash
-export FAL_KEY=your_key_here
-```
-
-The skills detect `FAL_KEY` and use `fal_client.subscribe(...)` or curl against `fal.run/veed/*` endpoints.
+You're billed per model run at standard Fal rates — the skills and the CLI add no markup.
 
 ## Things to try
 

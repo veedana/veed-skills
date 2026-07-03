@@ -17,9 +17,16 @@ just the subject. Three modes available depending on use case.
 Powered by VEED's Background Removal API on Fal.
 
 ## Before you start
-The user needs:
-- A Fal API key — get one free at https://fal.ai/dashboard/keys
-- Set it as an environment variable: export FAL_KEY=your_key_here
+These skills run through the genmedia CLI, which handles model discovery,
+file upload, execution, and downloads against Fal.
+
+- Install it once — see https://github.com/fal-ai-community/genmedia-cli
+- Configure your Fal API key (get one free at https://fal.ai/dashboard/keys):
+      genmedia setup
+  Or non-interactively (agents / CI):
+      genmedia setup --non-interactive --api-key "$FAL_KEY"
+
+All commands below assume `genmedia` is on your PATH.
 
 ## What to ask the user for
 
@@ -40,27 +47,22 @@ Collect ALL of the following before proceeding:
 
 ## Step 1 — Map user choices to variables
 
-Based on the user's answers, set these variables:
+Based on the user's answers, pick the endpoint and refine flag:
 
-# Mode → model slug
-if mode == "Standard":
-    model = "veed/video-background-removal"
-elif mode == "Fast":
-    model = "veed/video-background-removal/fast"
-elif mode == "Green screen":
-    model = "veed/video-background-removal/green-screen"
+- Standard     → endpoint `veed/video-background-removal`
+- Fast         → endpoint `veed/video-background-removal/fast`
+- Green screen → endpoint `veed/video-background-removal/green-screen`
 
-# Refine edges → boolean
-refine = True if user chose ON else False
+Refine edges → `refine_foreground_edges` is `true` (ON) or `false` (OFF).
 
 ## Step 2 — Handle video input
 
-If the user provided a local file path, upload it to Fal first:
+If the user gave a local file path, upload it to Fal's CDN first:
 
-import fal_client
-video_url = fal_client.upload_file("/path/to/video.mp4")
+    genmedia upload /path/to/video.mp4 --json
 
-If already a public URL, use it directly — no upload needed.
+Copy the returned "url". If the input is already a public URL, use it
+directly — no upload needed.
 
 ## Step 3 — Show cost estimte before proceeding
 
@@ -77,33 +79,23 @@ with Refine ON. Shall I proceed?"
 
 ## Step 4 — Remove the background
 
-Use fal_client.subscribe() instead of run() to handle long jobs and
-show progress:
+Run the chosen endpoint:
 
-import fal_client
+    genmedia run veed/video-background-removal \
+      --video_url "<video_url>" \
+      --refine_foreground_edges true \
+      --json
 
-def on_queue_update(update):
-    if hasattr(update, "logs"):
-        for log in update.logs:
-            print(log["message"])
+Swap the endpoint for the fast or green-screen variant per Step 1, and set
+`--refine_foreground_edges` to `false` if the user chose OFF.
 
-result = fal_client.subscribe(
-    model,
-    arguments={
-        "video_url": video_url,
-        "refine_foreground_edges": refine
-    },
-    with_logs=True,
-    on_queue_update=on_queue_update
-)
-
-print(result["video"]["url"])
+The result JSON contains `video.url` — return it to the user.
 
 ## After the call
 - Return the video.url to the user
 - Warn the user that Fal URLs expire after ~24 hours — download the
   file locally if they want to keep it
-- 401 error: FAL_KEY is invalid or not set
+- 401 / auth error: Fal key not configured — run `genmedia setup`
 - 422 error: video not accessible or format not supported
 - 429 error: rate limit hit — wait a moment and retry
 - 500 error: model error on Fal's side — retry once before giving up

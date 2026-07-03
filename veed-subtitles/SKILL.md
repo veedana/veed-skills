@@ -23,9 +23,16 @@ output. Supports 125+ source languages and 27 visual presets.
 Powered by VEED's Subtitles API on Fal.
 
 ## Before you start
-The user needs:
-- A Fal API key — get one free at https://fal.ai/dashboard/keys
-- Set it as an environment variable: export FAL_KEY=your_key_here
+These skills run through the genmedia CLI, which handles model discovery,
+file upload, execution, and downloads against Fal.
+
+- Install it once — see https://github.com/fal-ai-community/genmedia-cli
+- Configure your Fal API key (get one free at https://fal.ai/dashboard/keys):
+      genmedia setup
+  Or non-interactively (agents / CI):
+      genmedia setup --non-interactive --api-key "$FAL_KEY"
+
+All commands below assume `genmedia` is on your PATH.
 
 ## What to ask the user for
 
@@ -83,38 +90,38 @@ user hasn't already mentioned them.
          on those)
    Any field you leave out keeps the preset's default. Say 'defaults'
    or 'skip' if you want to use the preset as-is."
-   - If the user provides overrides → build a customization dict (see
-     Step 2 below) and pass it in the API call
+   - If the user provides overrides → build a customization JSON object
+     (see Step 2 below) and pass it in the run command
    - If the user says 'defaults', 'skip', 'no preference', or similar →
-     set customization to None and do NOT pass it in the API call
+     do NOT pass a customization flag in the run command
 
 ## Step 1 — Handle video and SRT inputs
 
-If the user provided a local video path, upload it to Fal first:
+If the user gave a local video path, upload it to Fal's CDN first:
 
-import fal_client
-video_url = fal_client.upload_file("/path/to/video.mp4")
+    genmedia upload /path/to/video.mp4 --json
 
-If already a public URL, use it directly — no upload needed.
+Copy the returned "url". If already a public URL, use it directly — no
+upload needed.
 
-If the user provided a local SRT file path, upload that too:
+If the user gave a local SRT file path, upload that too:
 
-srt_file_url = fal_client.upload_file("/path/to/captions.srt")
+    genmedia upload /path/to/captions.srt --json
 
-## Step 2 — Build the customization dict (if provided)
+## Step 2 — Build the customization object (if provided)
 
 Only build this if the user provided overrides. Any omitted field keeps
-the preset's default.
+the preset's default. Pass it as a JSON string on the `--customization` flag:
 
-customization = {
-    "position": "bottom",
-    "shadow": "mid",
-    "text_customizations": {
+    {
+      "position": "bottom",
+      "shadow": "mid",
+      "text_customizations": {
         "accessible":  {"font": "Inter", "weight": 500, "color": "#FFFFFF"},
         "highlighted": {"font": "Inter", "weight": 700, "color": "#FFD500"},
         "viral":       {"font": "Inter", "weight": 900, "color": "#FF2E63"}
+      }
     }
-}
 
 Constraints:
 - position: top, center, or bottom
@@ -141,52 +148,28 @@ Show the estimate to the user and ask them to confirm before proceeding.
 Example: "This will cost approximately $0.40 for a 2-minute 1080p video
 with the 'glass' preset (dynamic, 2x multiplier). Shall I proceed?"
 
-## Step 4 — Build the arguments dict conditionally
+## Step 4 — Render the subtitled video
 
-Only include optional fields if the user actually provided them:
+Run the subtitles endpoint. Include the optional flags only when the user
+actually provided them:
 
-import fal_client
+    genmedia run veed/subtitles \
+      --video_url "<video_url>" \
+      --preset glass \
+      --json
 
-arguments = {
-    "video_url": video_url,
-    "preset": preset
-}
+Add any of these only if provided:
+- `--language "es-MX"` — source-audio language code
+- `--srt_file_url "<url>"` OR `--srt_content "<raw SRT>"` — supply at most one
+- `--customization '<JSON from Step 2>'` — the customization object
 
-if language is not None:
-    arguments["language"] = language
-
-if srt_file_url is not None:
-    arguments["srt_file_url"] = srt_file_url
-elif srt_content is not None:
-    arguments["srt_content"] = srt_content
-
-if customization is not None:
-    arguments["customization"] = customization
-
-## Step 5 — Render the subtitled video
-
-Use fal_client.subscribe() instead of run() to handle long jobs and
-show progress:
-
-def on_queue_update(update):
-    if hasattr(update, "logs"):
-        for log in update.logs:
-            print(log["message"])
-
-result = fal_client.subscribe(
-    "veed/subtitles",
-    arguments=arguments,
-    with_logs=True,
-    on_queue_update=on_queue_update
-)
-
-print(result["video"]["url"])
+The result JSON contains `video.url` — return it to the user.
 
 ## After the call
 - Return the video.url to the user
 - Warn the user that Fal URLs expire after ~24 hours — download the
   file locally if they want to keep it
-- 401 error: FAL_KEY is invalid or not set
+- 401 / auth error: Fal key not configured — run `genmedia setup`
 - 422 error: video not accessible, format not supported, or invalid
   SRT content
 - 400 error: unrecognized font name in customization — check the
