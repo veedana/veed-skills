@@ -81,8 +81,8 @@ Do not skip any question, even if the user gave you a one-line brief.
 6. Subtitles — ask: "Do you want subtitles burned into the final video?"
    - If yes → ask which preset. Say to the user: "Which subtitle style?
      The dynamic presets (glass, whisper, glide2, fusion, glide, terminal,
-     handwritten) are richer and best for social content; there are also
-     lightweight basic presets. Default suggestion: 'glass'." (See the
+     handwritten, backdrop, backdrop2) are richer and best for social content;
+     there are also lightweight basic presets. Default suggestion: 'glass'." (See the
      veed-subtitles skill for the full preset gallery.)
      Store as subtitle_preset. Note the dynamic presets carry a 2x cost
      multiplier — this matters for the estimate in Step 1.
@@ -119,8 +119,8 @@ Cost components:
     Where price_per_second = $0.08 (480p) or $0.15 (720p)
 - Subtitles (only if subtitle_preset is not None):
     Minimum charge is 1 minute = $0.10. For dynamic presets (glass,
-    whisper, glide2, fusion, glide, terminal, handwritten), apply 2x
-    multiplier = $0.20 minimum.
+    whisper, glide2, fusion, glide, terminal, handwritten, backdrop,
+    backdrop2), apply 2x multiplier = $0.20 minimum.
 
 Show the breakdown to the user. Example for a 10-second video at 720p
 with the glass subtitle preset:

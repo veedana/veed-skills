@@ -8,7 +8,7 @@ VEED Skills is a set of skills that teach an AI agent to call VEED's video APIs 
 
 - **veed-talking-head** — image + audio → lip-synced presenter video (Fabric 1.0)
 - **veed-talking-head-text** — image + text script → lip-synced video with AI-generated speech (Fabric 1.0 Text)
-- **veed-subtitles** — video → styled, burned-in captions (20+ presets, 125+ languages)
+- **veed-subtitles** — video → styled, burned-in captions (30 presets, 125+ languages, optional translation)
 - **veed-background-removal** — video → clean subject (3 modes)
 
 **Workflow skills** — chain endpoint skills together in a single flow:

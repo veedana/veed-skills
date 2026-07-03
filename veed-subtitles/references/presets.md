@@ -1,17 +1,18 @@
 # VEED Subtitle Presets
 
-Presets come in two tiers. The tier sets the cost multiplier (see the Pricing
+30 presets in two tiers. The tier sets the cost multiplier (see the Pricing
 section of SKILL.md): dynamic presets bill at 2x, basic presets at 1x.
 
 Run `genmedia schema veed/subtitles --json` for the authoritative, current
-preset enum — VEED adds presets over time, so treat the lists below as the
+preset enum — VEED adds presets over time, so treat the list below as the
 known set rather than a fixed total.
 
 ## Dynamic presets (2x multiplier)
 Richer, context-aware rendering that adapts to the input. Best for social /
 hook content.
 
-    glass, whisper, glide2, fusion, glide, terminal, handwritten
+    glass, whisper, glide2, fusion, glide, terminal, handwritten,
+    backdrop, backdrop2
 
 ## Basic presets (1x multiplier)
 Fixed, lightweight styling with predictable output. Best for utility

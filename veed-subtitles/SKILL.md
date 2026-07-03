@@ -3,7 +3,7 @@ version: 1.0.0
 name: veed-subtitles
 description: >
   Burn styled, auto-transcribed subtitles into any video with VEED's Subtitles
-  API — 20+ styled presets, 125+ source languages, optional SRT input. Use when the
+  API — 30 styled presets, 125+ source languages, optional SRT input. Use when the
   user wants captions rendered onto a video: "add subtitles to this video",
   "burn in captions", "caption this in Spanish". NOT for: producing a
   standalone .srt without rendering (this always returns a video with the
@@ -35,8 +35,9 @@ user hasn't already mentioned them.
 2. Preset — which subtitle style they want. Presets come in two tiers:
    dynamic (2x cost multiplier, richer, best for social) and basic (1x,
    lightweight). The dynamic presets are: glass, whisper, glide2, fusion,
-   glide, terminal, handwritten. For the full gallery and the authoritative
-   current list see [references/presets.md](references/presets.md). If the
+   glide, terminal, handwritten, backdrop, backdrop2. For the full gallery and
+   the authoritative current list see [references/presets.md](references/presets.md).
+   If the
    user is unsure, suggest "glass" (dynamic) for social or "simple" (basic)
    for utility.
 
@@ -120,8 +121,8 @@ Run `genmedia pricing veed/subtitles --json` for the authoritative current
 base rate. Indicative rates at time of writing:
 - Base rate: $0.10 per minute of input video
 - Resolution multiplier: 2x for video above 1080p
-- Preset multiplier: 2x for dynamic presets (glass, whisper, glide,
-  glide2, fusion, terminal, handwritten)
+- Preset multiplier: 2x for dynamic presets (glass, whisper, glide, glide2,
+  fusion, terminal, handwritten, backdrop, backdrop2)
 - Multipliers compound (e.g. a 4K dynamic render = $0.40 per minute)
 - Minimum charge: 1 minute
 - Max duration: 2 hours at ≤1080p, 1 hour above 1080p

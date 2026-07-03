@@ -22,7 +22,7 @@ Five skills — four endpoint skills and one workflow skill — that work standa
 |---|---|---|
 | **veed-talking-head** | Static image + audio file → lip-synced presenter video. Powered by VEED's Fabric 1.0. | `/veed:talking-head` |
 | **veed-talking-head-text** | Static image + text script → lip-synced video. AI voice generation built in (optional voice description). | `/veed:talking-head-text` |
-| **veed-subtitles** | Any video → styled, burned-in subtitles. 20+ visual presets, auto-transcription in 125+ languages, full positioning control. | `/veed:subtitles` |
+| **veed-subtitles** | Any video → styled, burned-in subtitles. 30 visual presets, auto-transcription in 125+ languages (optional translation), full positioning control. | `/veed:subtitles` |
 | **veed-background-removal** | Any video → clean subject. Three modes: standard, fast, green screen. Optional foreground refinement. | `/veed:background-removal` |
 | **veed-product-pitch** | Product image/description + spokesperson image/description + script/audio → finished product spokesperson video with optional subtitles. Chains image generation, talking head, and subtitles in one flow. | `/veed:product-pitch` |
 
