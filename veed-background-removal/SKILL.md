@@ -83,17 +83,35 @@ First confirm the endpoint's current input fields (Fal schemas can change):
 
     genmedia schema veed/video-background-removal --json
 
-Then run the chosen endpoint, using the exact field names from the schema:
+Then run the chosen endpoint asynchronously, using the exact field names
+from the schema. `--async` submits the job and returns immediately with a
+`request_id`:
 
     genmedia run veed/video-background-removal \
       --video_url "<video_url>" \
       --refine_foreground_edges true \
+      --async \
       --json
 
 Swap the endpoint for the fast or green-screen variant per Step 1, and set
 `--refine_foreground_edges` to `false` if the user chose OFF. The flags above
 reflect the expected schema — if `genmedia schema` shows a different name,
 follow it.
+
+IMPORTANT — record the `request_id` and show it to the user. The run is
+billed once submitted, so if the session is interrupted you can re-fetch the
+result with `status` instead of paying to run it again.
+
+## Step 5 — Poll for the result
+
+Check the job with the recorded `request_id` until it reports completed
+(use the same endpoint variant you ran):
+
+    genmedia status veed/video-background-removal <request_id> --json
+
+The completed result JSON contains `video.url` — return it to the user. If
+the session was interrupted, resume here with the same `request_id`; do NOT
+re-run Step 4.
 
 The result JSON contains `video.url` — return it to the user.
 

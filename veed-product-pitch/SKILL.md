@@ -196,9 +196,14 @@ Take the first image URL from the result as composite_image_url.
 
 ## Step 5 — Generate the talking head video
 
-Branch based on mode:
+The Nano Banana steps above are quick and run synchronously, but the talking
+head is the long, expensive job — run it asynchronously so a dropped
+connection doesn't lose it. Keep the `composite_image_url` from Step 4: if a
+resume is needed you re-run only this step, not the paid image steps.
 
-If mode == "audio", upload the audio and run Fabric 1.0:
+Branch based on mode.
+
+If mode == "audio", upload the audio and run Fabric 1.0 with `--async`:
 
     genmedia upload /path/to/audio.mp3 --json
 
@@ -206,30 +211,42 @@ If mode == "audio", upload the audio and run Fabric 1.0:
       --image_url "<composite_image_url>" \
       --audio_url "<audio_url>" \
       --resolution 480p \
+      --async \
       --json
 
-If mode == "text", run Fabric 1.0 Text (add `--voice_description` only if
-voice_description is not None):
+If mode == "text", run Fabric 1.0 Text with `--async` (add
+`--voice_description` only if voice_description is not None):
 
     genmedia run veed/fabric-1.0/text \
       --image_url "<composite_image_url>" \
       --text "<script_text>" \
       --resolution 480p \
+      --async \
       --json
 
-Set `--resolution` to `720p` if the user chose it. Take `video.url` from
-the result as video_url.
+Set `--resolution` to `720p` if the user chose it. Both return a
+`request_id` — record it and show it to the user; the run is billed once
+submitted.
+
+Poll for the result with the endpoint you ran (`veed/fabric-1.0` or
+`veed/fabric-1.0/text`):
+
+    genmedia status veed/fabric-1.0 <request_id> --json
+
+Take `video.url` from the completed result as video_url. If the session was
+interrupted, resume here with the same `request_id`; do NOT re-run the job.
 
 If subtitle_preset is None: return video_url to the user and stop here.
 
 ## Step 6 — Add subtitles (only if subtitle_preset is set)
 
-Run the subtitles endpoint using video_url as the input. Add
-`--customization` only if the user provided overrides:
+Run the subtitles endpoint asynchronously using video_url as the input.
+Add `--customization` only if the user provided overrides:
 
     genmedia run veed/subtitles \
       --video_url "<video_url>" \
       --preset "<subtitle_preset>" \
+      --async \
       --json
 
 If subtitle_customization is set, build the JSON object matching the values
@@ -253,7 +270,14 @@ Constraints:
 - weight: 100-900
 - color: hex string (e.g. "#FFFFFF")
 
-Take `video.url` from the result as final_video_url.
+This returns a `request_id` — record it and show it to the user. Keep
+`video_url` (the talking head from Step 5) too: on a resume you re-run only
+the subtitles step, not the paid talking-head step. Poll for the result:
+
+    genmedia status veed/subtitles <request_id> --json
+
+Take `video.url` from the completed result as final_video_url. If the session
+was interrupted, resume here with the same `request_id`; do NOT re-run the job.
 
 Do not ask the user about language or SRT input — for this workflow,
 auto-transcription is used. If the user needs language or SRT control,

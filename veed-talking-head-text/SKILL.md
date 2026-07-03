@@ -86,13 +86,15 @@ First confirm the endpoint's current input fields (Fal schemas can change):
 
     genmedia schema veed/fabric-1.0/text --json
 
-Then run Fabric 1.0 Text, using the exact field names from the schema.
-Include `--voice_description` ONLY if the user gave one:
+Then run Fabric 1.0 Text asynchronously, using the exact field names from
+the schema. `--async` submits the job and returns immediately with a
+`request_id`. Include `--voice_description` ONLY if the user gave one:
 
     genmedia run veed/fabric-1.0/text \
       --image_url "<image_url>" \
       --text "<script text>" \
       --resolution 480p \
+      --async \
       --json
 
 If the user provided a voice description, add:
@@ -102,7 +104,19 @@ If the user provided a voice description, add:
 Set `--resolution` to `720p` if the user chose it. The flags above reflect
 the expected schema — if `genmedia schema` shows a different name, follow it.
 
-The result JSON contains `video.url` — return it to the user.
+IMPORTANT — record the `request_id` and show it to the user. The run is
+billed once submitted, so if the session is interrupted you can re-fetch the
+result with `status` instead of paying to run it again.
+
+## Step 4 — Poll for the result
+
+Check the job with the recorded `request_id` until it reports completed:
+
+    genmedia status veed/fabric-1.0/text <request_id> --json
+
+The completed result JSON contains `video.url` — return it to the user. If
+the session was interrupted, resume here with the same `request_id`; do NOT
+re-run Step 3.
 
 ## After the call
 - Return the video.url to the user
