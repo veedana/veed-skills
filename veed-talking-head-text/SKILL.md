@@ -2,13 +2,12 @@
 version: 1.4.0
 name: veed-talking-head-text
 description: >
-  Generate a talking head video from a static image and a text script
-  using VEED's Fabric 1.0 Text API. VEED's AI voice generator converts
-  the script to speech automatically. Use when: "generate a talking head
-  video from a script", "make this image say this", "create a spokesperson
-  video with this text", "I want to type what the person says".
-  Accepts local file paths or public URLs for the image.
-  NOT for: using your own audio file (use veed-talking-head).
+  Turn a static image + a text script into a lip-synced talking head video
+  with VEED's Fabric 1.0 Text — VEED generates the speech, no audio file
+  needed. Use when the user wants a spokesperson to say typed text: "make this
+  photo say '...'", "talking head from a script", "spokesperson video from
+  text". Image is a local path or URL. NOT for: using your own audio file
+  (use veed-talking-head).
 ---
 
 # VEED Talking Head — Text to Video (Fabric 1.0)

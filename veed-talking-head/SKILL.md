@@ -2,13 +2,12 @@
 version: 1.3.0
 name: veed-talking-head
 description: >
-  Generate a talking head video from a static image and audio using VEED's
-  Fabric 1.0 API. Animates any face in an image to sync lip movements with
-  the provided audio. Use when: "generate a talking head video", "animate
-  this photo", "make this image speak", "create a spokesperson video",
-  "lipsync this image to audio", "bring this photo to life".
-  Accepts local file paths or public URLs for image and audio.
-  NOT for: dubbing an existing video, adding subtitles, removing backgrounds.
+  Lip-sync a face in a static image to an audio file with VEED's Fabric 1.0 —
+  a talking head / spokesperson video. Use when the user wants to animate a
+  photo to speak from an audio track: "make this image talk", "lipsync this
+  photo to audio", "create a spokesperson video". Image + audio, local paths
+  or URLs. NOT for: generating speech from text (use veed-talking-head-text),
+  dubbing an existing video, subtitles, or background removal.
 ---
 
 # VEED Talking Head — Fabric 1.0

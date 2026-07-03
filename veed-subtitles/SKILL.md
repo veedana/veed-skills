@@ -2,15 +2,12 @@
 version: 1.0.0
 name: veed-subtitles
 description: >
-  Add styled, burned-in subtitles to any video using VEED's Subtitles API.
-  Handles the full pipeline — transcribe, style, and render — in one call,
-  returning a finished MP4 with captions baked in. Use when: "add subtitles
-  to this video", "burn in captions", "caption this video", "add animated
-  subtitles", "subtitle this in Spanish/French/etc", "style my subtitles".
-  Accepts local file paths or public URLs, with 27 presets and optional
-  SRT input.
-  NOT for: generating standalone .srt files without rendering (this skill
-  always returns a video with burned-in subtitles).
+  Burn styled, auto-transcribed subtitles into any video with VEED's Subtitles
+  API — 27 presets, 125+ source languages, optional SRT input. Use when the
+  user wants captions rendered onto a video: "add subtitles to this video",
+  "burn in captions", "caption this in Spanish". NOT for: producing a
+  standalone .srt without rendering (this always returns a video with the
+  captions baked in).
 ---
 
 # VEED Subtitles

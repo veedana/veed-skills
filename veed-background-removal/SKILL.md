@@ -2,11 +2,11 @@
 version: 1.3.0
 name: veed-background-removal
 description: >
-  Remove the background from any video using VEED's Background Removal API.
-  Use when: "remove background from this video", "remove the background",
-  "make the background transparent", "extract the subject", "green screen
-  removal". Accepts local file paths or public URLs.
-  NOT for: removing backgrounds from images (video only).
+  Remove the background from a video with VEED's Background Removal API —
+  standard, fast, or green-screen mode. Use when the user wants to isolate the
+  subject or drop a video's background: "remove the background", "extract the
+  subject", "green screen removal". Accepts local paths or URLs.
+  NOT for: images (video only).
 ---
 
 # VEED Background Removal

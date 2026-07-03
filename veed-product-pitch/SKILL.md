@@ -2,20 +2,14 @@
 version: 1.0.0
 name: veed-product-pitch
 description: >
-  WORKFLOW SKILL — chains Nano Banana image generation + composition with
-  VEED's Fabric talking head and Subtitles APIs to create a finished
-  product spokesperson video in one flow. The user provides a product
-  (uploaded image or text description), a spokesperson (uploaded image or
-  text description), and what the spokesperson should say (audio or text).
-  Optionally adds burned-in subtitles. Use when: "create a product pitch
-  video", "make a spokesperson video for my product", "generate a talking
-  head video promoting [product]", "create a UGC-style ad for my brand",
-  "make a creator-style product video", "get a model to hold my product
-  and talk about it", "create a product ad with someone talking",
-  "make a testimonial-style video for my product".
-  NOT for: generating a single product image (use Nano Banana directly),
-  a talking head without a product (use veed-talking-head or
-  veed-talking-head-text).
+  WORKFLOW SKILL — chains image generation + composition, VEED Fabric talking
+  head, and VEED Subtitles into a finished product spokesperson video in one
+  flow: a person holding your product and talking about it, optionally with
+  burned-in subtitles. Use when the user wants a product ad, UGC / creator-
+  style video, or testimonial with a spokesperson: "make a product pitch
+  video", "UGC ad for my brand", "get a model to hold my product and talk
+  about it". NOT for: a single product image (use Nano Banana directly), or a
+  talking head without a product (use veed-talking-head / veed-talking-head-text).
 ---
 
 # VEED Product Pitch — Workflow Skill
