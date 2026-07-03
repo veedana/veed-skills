@@ -1,6 +1,6 @@
 # Install VEED Skills
 
-Grab a Fal API key at <https://fal.ai/dashboard/keys>, then pick the install path that matches your agent.
+Grab a Fal API key at <https://fal.ai/dashboard/keys>, then clone the repo (below) and configure the genmedia CLI.
 
 The repo ships **five skills** plus a shared [`COMMON.md`](./COMMON.md) they
 all reference:
@@ -49,7 +49,7 @@ genmedia setup --non-interactive --api-key "$FAL_KEY"
 
 ## First run
 
-Paste this prompt to your agent (works for any install option above):
+Paste this prompt to your agent (once installed):
 
 > Install the VEED Skills from <https://github.com/veedana/veed-skills.git> — clone it into your skills directory (find it via your config or ask the user if unsure). Make sure the genmedia CLI is installed and `genmedia setup` has been run with a Fal key. Then use veed-talking-head-text to animate this photo: [paste image URL] saying "Hello from VEED."
 

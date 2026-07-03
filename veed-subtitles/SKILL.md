@@ -3,7 +3,7 @@ version: 1.0.0
 name: veed-subtitles
 description: >
   Burn styled, auto-transcribed subtitles into any video with VEED's Subtitles
-  API — 27 presets, 125+ source languages, optional SRT input. Use when the
+  API — 20+ styled presets, 125+ source languages, optional SRT input. Use when the
   user wants captions rendered onto a video: "add subtitles to this video",
   "burn in captions", "caption this in Spanish". NOT for: producing a
   standalone .srt without rendering (this always returns a video with the
@@ -32,12 +32,13 @@ user hasn't already mentioned them.
    a public URL. Accepted formats: MP4, MOV, WEBM, M4V, GIF
    Tip on Mac: right-click file in Finder → hold Option → Copy as Pathname
 
-2. Preset — which subtitle style they want. 27 presets in two tiers:
+2. Preset — which subtitle style they want. Presets come in two tiers:
    dynamic (2x cost multiplier, richer, best for social) and basic (1x,
    lightweight). The dynamic presets are: glass, whisper, glide2, fusion,
-   glide, terminal, handwritten. For the full gallery and guidance see
-   [references/presets.md](references/presets.md). If the user is unsure,
-   suggest "glass" (dynamic) for social or "simple" (basic) for utility.
+   glide, terminal, handwritten. For the full gallery and the authoritative
+   current list see [references/presets.md](references/presets.md). If the
+   user is unsure, suggest "glass" (dynamic) for social or "simple" (basic)
+   for utility.
 
 3. Language (optional) — source-audio language code (e.g. en-US, es-MX,
    ja-JP, fr-FR). Improves transcription accuracy. Leave blank to
@@ -63,7 +64,7 @@ user hasn't already mentioned them.
    or 'skip' to use the preset as-is." The full set of options and their
    meanings is in [references/customization.md](references/customization.md).
    - If the user provides overrides → build a customization JSON object
-     (see Step 2 and references/customization.md) and pass it in the run
+     (see Step 1 and references/customization.md) and pass it in the run
    - If the user says 'defaults', 'skip', 'no preference', or similar →
      do NOT pass a customization flag in the run command
 

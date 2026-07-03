@@ -81,7 +81,7 @@ Do not skip any question, even if the user gave you a one-line brief.
 6. Subtitles — ask: "Do you want subtitles burned into the final video?"
    - If yes → ask which preset. Say to the user: "Which subtitle style?
      The dynamic presets (glass, whisper, glide2, fusion, glide, terminal,
-     handwritten) are richer and best for social content; there are also 21
+     handwritten) are richer and best for social content; there are also
      lightweight basic presets. Default suggestion: 'glass'." (See the
      veed-subtitles skill for the full preset gallery.)
      Store as subtitle_preset. Note the dynamic presets carry a 2x cost
@@ -114,7 +114,7 @@ Cost components:
 - Nano Banana spokesperson generation: $0.039 (only if user described the spokesperson)
 - Nano Banana composite (always): $0.039
 - Fabric talking head:
-    estimated_seconds = audio_duration OR (word_count / 150) x 60
+    estimated_seconds = audio_duration OR (word_count / 130) x 60
     fabric_cost = estimated_seconds x price_per_second
     Where price_per_second = $0.08 (480p) or $0.15 (720p)
 - Subtitles (only if subtitle_preset is not None):

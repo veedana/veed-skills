@@ -2,13 +2,13 @@
 
 ## What this is
 
-VEED Skills is a set of self-contained skills that teach an AI agent to call VEED's video APIs (hosted on Fal). Five skills today, in two categories:
+VEED Skills is a set of skills that teach an AI agent to call VEED's video APIs (hosted on Fal). Five skills today, in two categories:
 
 **Endpoint skills** — each calls a single VEED API, stateless and independent:
 
 - **veed-talking-head** — image + audio → lip-synced presenter video (Fabric 1.0)
 - **veed-talking-head-text** — image + text script → lip-synced video with AI-generated speech (Fabric 1.0 Text)
-- **veed-subtitles** — video → styled, burned-in captions (27 presets, 125+ languages)
+- **veed-subtitles** — video → styled, burned-in captions (20+ presets, 125+ languages)
 - **veed-background-removal** — video → clean subject (3 modes)
 
 **Workflow skills** — chain endpoint skills together in a single flow:
@@ -76,7 +76,7 @@ The `description` field is what agents read to decide whether to invoke the skil
 
 Each `SKILL.md` is injected into every prompt turn the agent spends in that skill. Token cost matters.
 
-- **Today:** `veed-product-pitch` (~300 lines) and `veed-subtitles` disclose material to a sibling `references/` folder; the other three are well under 300 with no references.
+- **Today:** every SKILL.md sits well under 300 lines (largest is `veed-product-pitch` at ~250), helped by shared boilerplate in `COMMON.md` plus per-skill `references/` in `veed-subtitles` and `veed-product-pitch`.
 - **When a SKILL.md grows past ~300 lines:** migrate procedural detail, gallery tables, and error matrices into a sibling `references/` folder loaded on demand (`See references/presets.md for the full preset list.`). Keep the SKILL.md as a thin decision tree + pointers.
 - **What stays in SKILL.md regardless:** frontmatter, the decision tree for which mode/path to take, critical rules that apply every turn, short pointers to references.
 - **The test:** if removing a section from `SKILL.md` would *not* break the agent's ability to decide what to do next, it belongs in `references/`. If it would, it stays.
@@ -108,7 +108,7 @@ Validated decisions that should not be revisited without new data:
 
 Edit `CLAUDE.md` when:
 
-- The mode-detection ladder changes (new transport, deprecation of an old one)
+- The transport changes (new execution path, deprecation of an old one)
 - A "key decision" above is overturned by new data
 - A new convention is added (e.g. a `scripts/` pattern, a per-skill state file)
 

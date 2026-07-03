@@ -24,7 +24,7 @@
   "interface": {
     "displayName": "VEED",
     "shortDescription": "Agentic AI video creation — talking heads, product pitch, subtitles, background removal",
-    "longDescription": "VEED Skills give your agent the ability to create video without leaving the chat. Use /veed:talking-head and /veed:talking-head-text to animate any photo into a lip-synced presenter (audio file or generated speech from text), /veed:subtitles to burn styled captions onto any video with 27 visual presets and auto-transcription in 125+ languages, /veed:background-removal to extract subjects with three modes (standard, fast, green screen), and /veed:product-pitch to create a finished product spokesperson video by chaining image generation, talking head, and subtitles in one flow. All skills run on VEED's APIs via Fal.",
+    "longDescription": "VEED Skills give your agent the ability to create video without leaving the chat. Use /veed:talking-head and /veed:talking-head-text to animate any photo into a lip-synced presenter (audio file or generated speech from text), /veed:subtitles to burn styled captions onto any video with 20+ visual presets and auto-transcription in 125+ languages, /veed:background-removal to extract subjects with three modes (standard, fast, green screen), and /veed:product-pitch to create a finished product spokesperson video by chaining image generation, talking head, and subtitles in one flow. All skills run on VEED's APIs via Fal.",
     "developerName": "VEED",
     "category": "Design",
     "capabilities": ["Read", "Write"],

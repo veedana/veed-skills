@@ -1,9 +1,17 @@
 # 0001 — PRD: Multi-host scaffold for veed-skills (Phase 1)
 
-- **Status:** Proposed
+- **Status:** Partially superseded — see note below
 - **Date:** 2026-05-20
 - **Branch:** `t/scaffold`
 - **Author:** Timur (with Ana)
+
+> **Superseded (2026-07):** the transport and bundling decisions in this PRD
+> have changed. Skills now run through the **genmedia CLI** (not the Fal MCP →
+> `fal_client` → curl "mode-detection ladder" described here; `.mcp.json` was
+> removed), and shared boilerplate lives in a repo-root `COMMON.md`, so the
+> repo installs **as a whole** rather than per-skill. `references/` folders are
+> now in use. `CLAUDE.md` is the current source of truth for architecture,
+> transport, and decisions. This document is retained as the Phase-1 record.
 
 ## Problem Statement
 
