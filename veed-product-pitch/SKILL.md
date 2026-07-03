@@ -73,10 +73,14 @@ Do not skip any question, even if the user gave you a one-line brief.
    phrases) as voice_description. Fabric would interpret it as a voice
    description verbatim and produce a strange-sounding voice.
 
-5. Resolution — ask: "Which resolution do you want?
-   - 480p — $0.08 per second of output video
-   - 720p — $0.15 per second of output video"
-   Default to 480p if not specified.
+5. Resolution and aspect ratio —
+   - Resolution: 480p ($0.08/sec) or 720p ($0.15/sec). Default 480p.
+   - Aspect ratio — the orientation of the final video: 9:16 vertical for
+     TikTok / Reels / Shorts (suggested for social / UGC), 1:1 square, or
+     16:9 landscape. Default 9:16. Store as aspect_ratio.
+   Fabric has no aspect setting of its own — the final video inherits the
+   composite image's shape — so aspect_ratio is applied when generating the
+   spokesperson and compositing (Steps 3-4), not at the talking-head step.
 
 6. Subtitles — ask: "Do you want subtitles burned into the final video?"
    - If yes → ask which preset. Say to the user: "Which subtitle style?
@@ -156,10 +160,12 @@ If spokesperson_image_path is set (user uploaded), upload it and keep the URL:
 
     genmedia upload /path/to/spokesperson.jpg --json
 
-Else (user described), generate one with Nano Banana:
+Else (user described), generate one with Nano Banana in the chosen
+aspect_ratio so the person is framed for the final orientation:
 
     genmedia run fal-ai/gemini-25-flash-image \
       --prompt "<spokesperson_prompt>, clear face, looking at camera, professional photo, plain background" \
+      --aspect_ratio "<aspect_ratio>" \
       --num_images 1 \
       --json
 
@@ -173,9 +179,12 @@ Pass both URLs on the `--image_urls` flag as a JSON array:
     genmedia run fal-ai/gemini-25-flash-image/edit \
       --image_urls '["<spokesperson_image_url>", "<product_image_url>"]' \
       --prompt "Make the model hold this product in their hand. Keep the spokesperson's face clearly visible and looking at the camera. Natural pose, well-lit." \
+      --aspect_ratio "<aspect_ratio>" \
       --json
 
-Take the first image URL from the result as composite_image_url.
+Take the first image URL from the result as composite_image_url. This image's
+shape sets the final video's orientation, so make sure aspect_ratio matches
+what the user asked for.
 
 ## Step 5 — Generate the talking head video
 
