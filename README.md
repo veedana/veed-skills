@@ -44,27 +44,13 @@ genmedia setup --non-interactive --api-key "$FAL_KEY"
 
 ### 3. Install the skills
 
-The repo ships five skills you can install independently. Pick whichever subset you need.
-
-**Option A — `gh skill install`** (Claude Code, Cursor, Codex, Gemini CLI, Copilot, and more):
-
-```bash
-gh skill install veedana/veed-skills veed-talking-head
-gh skill install veedana/veed-skills veed-talking-head-text
-gh skill install veedana/veed-skills veed-subtitles
-gh skill install veedana/veed-skills veed-background-removal
-gh skill install veedana/veed-skills veed-product-pitch
-```
-
-Requires GitHub CLI v2.90+. The CLI writes to the right directory for your agent automatically. See [INSTALL.md](./INSTALL.md) for per-host paths and full options.
-
-**Option B — Git clone:**
+Install the **whole repo** — the skills share a common reference file ([`COMMON.md`](./COMMON.md)), so they aren't installed individually. Clone it into your agent's skills directory:
 
 ```bash
 git clone https://github.com/veedana/veed-skills.git ~/.claude/skills/veed-skills
 ```
 
-After cloning, all five skills are auto-discovered at `veed-talking-head/SKILL.md`, `veed-talking-head-text/SKILL.md`, `veed-subtitles/SKILL.md`, `veed-background-removal/SKILL.md`, and `veed-product-pitch/SKILL.md`.
+All five skills are then auto-discovered at `veed-talking-head/SKILL.md`, `veed-talking-head-text/SKILL.md`, `veed-subtitles/SKILL.md`, `veed-background-removal/SKILL.md`, and `veed-product-pitch/SKILL.md`, with `COMMON.md` alongside them. See [INSTALL.md](./INSTALL.md) for per-host paths.
 
 You're billed per model run at standard Fal rates — the skills and the CLI add no markup.
 

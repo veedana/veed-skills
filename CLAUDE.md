@@ -15,7 +15,7 @@ VEED Skills is a set of self-contained skills that teach an AI agent to call VEE
 
 - **veed-product-pitch** — product image/description + spokesperson image/description + script/audio → finished product spokesperson video with optional subtitles (chains image generation + Fabric talking head + subtitles)
 
-Endpoint skills are independent — they don't share state and don't depend on each other. Workflow skills orchestrate endpoint skills but likewise don't persist state between invocations. An agent can install any subset.
+Endpoint skills are independent at runtime — they don't share state and don't depend on each other's execution. Workflow skills orchestrate endpoint skills but likewise don't persist state between invocations. All skills share one file, `COMMON.md` (setup, async execution pattern, common errors), so the repo installs as a whole rather than skill-by-skill.
 
 ## Architecture
 
@@ -23,7 +23,8 @@ Endpoint skills are independent — they don't share state and don't depend on e
 veed-skills/
 ├── README.md                       # Public-facing description
 ├── INSTALL.md                      # Host-specific install paths
-├── CLAUDE.md                       # This file. Conventions, mode-detection ladder, decisions.
+├── CLAUDE.md                       # This file. Conventions, transport, decisions.
+├── COMMON.md                       # Shared: genmedia setup, async pattern, common errors
 ├── LICENSE                         # MIT
 ├── docs/                           # PRDs / ADRs / design notes (0001-, 0002-, ...)
 ├── .claude-plugin/
@@ -80,15 +81,15 @@ Each `SKILL.md` is injected into every prompt turn the agent spends in that skil
 - **What stays in SKILL.md regardless:** frontmatter, the decision tree for which mode/path to take, critical rules that apply every turn, short pointers to references.
 - **The test:** if removing a section from `SKILL.md` would *not* break the agent's ability to decide what to do next, it belongs in `references/`. If it would, it stays.
 
-## Self-contained bundles
+## Bundle structure
 
-Each skill must be installable on its own via `gh skill install veedana/veed-skills <skill-name>`. That means:
+The repo installs as a whole (git clone / the marketplace plugin), because all skills share `COMMON.md`. Rules:
 
-- No `../` references in `SKILL.md` or anything under `references/` / `scripts/`. Refer only inside the skill's own folder.
-- Every file mentioned in `SKILL.md` exists in the skill's bundle.
-- Conversely, every file in `references/` and `scripts/` is mentioned (linked) from `SKILL.md` — no orphans.
+- **Shared boilerplate lives once in `COMMON.md`** — genmedia setup, the async execution pattern (schema → run `--async` → poll → download → resume), uploading inputs, and the common error matrix. Each `SKILL.md` points to it via `../COMMON.md`; do not re-inline it.
+- **`../COMMON.md` is the only permitted upward reference.** Within a skill, per-skill `references/*.md` are linked relatively and stay inside the skill folder.
+- Every file linked from a `SKILL.md` exists; conversely every `references/` file is linked from its `SKILL.md` — no orphans.
 
-(`veed-subtitles` ships `references/presets.md` + `references/customization.md`; `veed-product-pitch` ships `references/voice-description.md` + `references/pricing.md`. No skill ships `scripts/` yet.)
+Per-skill references today: `veed-subtitles/references/{presets,customization}.md`, `veed-product-pitch/references/{voice-description,pricing}.md`. No skill ships `scripts/` yet.
 
 ## Key decisions
 
@@ -101,6 +102,7 @@ Validated decisions that should not be revisited without new data:
 5. **No process overhead in Phase 1.** No CI, no release-please, no `CONTRIBUTING.md`, no `CODEOWNERS`, no `INSTALL_FOR_AGENTS.md`, no `setup` script. Add only when there's evidence one is needed.
 6. **Brand assets ship in `assets/`.** `assets/icon.png` (515×512) is referenced as both `composerIcon` and `logo` in `.codex-plugin/plugin.json` and as `logo` in `.cursor-plugin/plugin.json`. Brand colour is `#96FF1A` (VEED green). A dedicated wordmark logo can replace the icon-for-logo reuse later if marketplace detail pages need it.
 7. **Endpoint skills are independent — no shared state files.** Unlike heygen's `AVATAR-<NAME>.md` pattern that coordinates avatar→video skills, veed's endpoint skills (talking-head, talking-head-text, subtitles, background-removal) are stateless and independent. Workflow skills (product-pitch) chain endpoint skills together in a single invocation but don't persist state between runs — no cross-invocation coordination files. If a future workflow needs shared state across invocations, revisit.
+8. **Shared boilerplate in `COMMON.md`, whole-repo install.** Setup, the async execution pattern, and the error matrix were duplicated verbatim across all five skills. Consolidated into `COMMON.md` (single source of truth) referenced via `../COMMON.md`. Trade-off, accepted deliberately: skills are no longer independently installable via `gh skill install <one>` — the repo installs as a whole. Chose DRY + one-place edits over per-skill install, since the skills already ship together as a plugin/marketplace bundle.
 
 ## When this file changes
 

@@ -16,16 +16,10 @@ Removes the background from a video, returning just the subject. Three modes:
 standard, fast, and green screen.
 
 ## Before you start
-These skills run through the genmedia CLI, which handles model discovery,
-file upload, execution, and downloads against Fal.
-
-- Install it once — see https://github.com/fal-ai-community/genmedia-cli
-- Configure your Fal API key (get one free at https://fal.ai/dashboard/keys):
-      genmedia setup
-  Or non-interactively (agents / CI):
-      genmedia setup --non-interactive --api-key "$FAL_KEY"
-
-All commands below assume `genmedia` is on your PATH.
+Setup (genmedia CLI + Fal key), the async execution pattern, uploading local
+inputs, and common errors are shared across all VEED skills — see
+[../COMMON.md](../COMMON.md). This file covers only what's specific to
+background removal.
 
 ## What to ask the user for
 
@@ -35,63 +29,33 @@ Collect ALL of the following before proceeding:
    a public URL. Accepted formats: MP4, MOV, WEBM, MKV, AVI
    Tip on Mac: right-click file in Finder → hold Option → Copy as Pathname
 
-2. Mode — which fits their need:
-   - Standard — best quality. Default if not specified.
-   - Fast — quicker, good for high volume or testing.
-   - Green screen — specialised for green screen footage.
+2. Mode — which fits their need (sets the endpoint):
+   - Standard — best quality. Default. → `veed/video-background-removal`
+   - Fast — quicker, for high volume or testing. → `.../fast`
+   - Green screen — for green screen footage. → `.../green-screen`
 
-3. Refine foreground edges:
-   - ON — cleaner edges, higher cost ($0.0225 per 30 frames). Default.
-   - OFF — faster, lower cost ($0.012 per 30 frames).
+3. Refine foreground edges — `refine_foreground_edges`:
+   - ON (`true`) — cleaner edges, higher cost. Default.
+   - OFF (`false`) — faster, lower cost.
 
-## Step 1 — Map user choices to variables
+## Step 1 — Estimate cost and confirm
 
-Based on the user's answers, pick the endpoint and refine flag:
-
-- Standard     → endpoint `veed/video-background-removal`
-- Fast         → endpoint `veed/video-background-removal/fast`
-- Green screen → endpoint `veed/video-background-removal/green-screen`
-
-Refine edges → `refine_foreground_edges` is `true` (ON) or `false` (OFF).
-
-## Step 2 — Handle video input
-
-If the user gave a local file path, upload it to Fal's CDN first:
-
-    genmedia upload /path/to/video.mp4 --json
-
-Copy the returned "url". If the input is already a public URL, use it
-directly — no upload needed.
-
-## Step 3 — Show cost estimate before proceeding
-
-Fetch the current rate rather than relying on memorised numbers (use the
-endpoint variant chosen in Step 1):
-
-    genmedia pricing veed/video-background-removal --json
-
-This model is billed per 30 frames, at a rate that depends on the refine
-setting. Estimate and show the cost:
+Fetch the rate for the chosen endpoint variant
+(`genmedia pricing veed/video-background-removal --json`). Billed per 30
+frames, at a rate that depends on the refine setting:
 
 - Get video duration in seconds (use ffprobe or ask the user)
 - Assume 30fps unless the user specifies otherwise
-- Estimated frames = duration_seconds x fps
-- Estimated cost = (frames / 30) x price_per_30_frames
+- Estimated cost = (duration_seconds x fps / 30) x price_per_30_frames
 
-Show the estimate to the user and ask them to confirm before proceeding.
-Example (indicative rates $0.0225 per 30 frames with Refine ON, $0.012 OFF):
-"This will cost approximately $0.45 for a 10-second video at 30fps with
-Refine ON. Shall I proceed?"
+Show the estimate and get confirmation. Example (indicative $0.0225/30f Refine
+ON, $0.012 OFF): "~$0.45 for a 10-second 30fps video, Refine ON. Proceed?"
 
-## Step 4 — Remove the background
+## Step 2 — Remove the background
 
-First confirm the endpoint's current input fields (Fal schemas can change):
-
-    genmedia schema veed/video-background-removal --json
-
-Then run the chosen endpoint asynchronously, using the exact field names
-from the schema. `--async` submits the job and returns immediately with a
-`request_id`:
+Upload the local video (see ../COMMON.md), then follow the async execution
+pattern in ../COMMON.md (schema → run `--async` → poll → download). Use the
+endpoint variant from the user's mode choice:
 
     genmedia run veed/video-background-removal \
       --video_url "<video_url>" \
@@ -99,47 +63,17 @@ from the schema. `--async` submits the job and returns immediately with a
       --async \
       --json
 
-Swap the endpoint for the fast or green-screen variant per Step 1, and set
-`--refine_foreground_edges` to `false` if the user chose OFF. The flags above
-reflect the expected schema — if `genmedia schema` shows a different name,
-follow it.
+Set `--refine_foreground_edges` to `false` if the user chose OFF. Download the
+result to `./outputs/background-removal/`, and return both the path and the URL.
 
-IMPORTANT — record the `request_id` and show it to the user. The run is
-billed once submitted, so if the session is interrupted you can re-fetch the
-result with `status` instead of paying to run it again.
-
-## Step 5 — Poll for the result
-
-Check the job with the recorded `request_id` until it reports completed
-(use the same endpoint variant you ran):
-
-    genmedia status veed/video-background-removal <request_id> --json
-
-Once completed, fetch the result and download the video locally in one step
-(Fal URLs expire after ~24 hours):
-
-    genmedia status veed/video-background-removal <request_id> \
-      --download "./outputs/background-removal/{request_id}.{ext}" \
-      --json
-
-`--download` saves the file to the given path and still returns `video.url`.
-Give the user both the local file path and the URL. If the session was
-interrupted, resume here with the same `request_id`; do NOT re-run Step 4.
-
-## After the call
-- Return both the local file path and the video.url to the user
-- The downloaded file is the durable copy — the Fal URL expires after ~24 hours
-- 401 / auth error: Fal key not configured — run `genmedia setup`
-- 422 error: video not accessible or format not supported
-- 429 error: rate limit hit — wait a moment and retry
-- 500 error: model error on Fal's side — retry once before giving up
+## Errors
+Common errors (401 / 422 / 429 / 500) are in ../COMMON.md. Here, a 422 usually
+means the video is inaccessible or in an unsupported format.
 
 ## Pricing
 Run `genmedia pricing veed/video-background-removal --json` (or the fast /
-green-screen variant) for the authoritative current rate. Indicative rates
-at time of writing:
-- Refine ON: $0.0225 per 30 frames
-- Refine OFF: $0.012 per 30 frames
+green-screen variant) for the authoritative current rate. Indicative: Refine
+ON $0.0225 per 30 frames, Refine OFF $0.012 per 30 frames.
 
 Model pages:
 - Standard: https://fal.ai/models/veed/video-background-removal

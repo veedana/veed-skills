@@ -2,7 +2,8 @@
 
 Grab a Fal API key at <https://fal.ai/dashboard/keys>, then pick the install path that matches your agent.
 
-The repo ships **five skills** you can install in any combination:
+The repo ships **five skills** plus a shared [`COMMON.md`](./COMMON.md) they
+all reference:
 
 - `veed-talking-head` — image + audio → lip-synced video
 - `veed-talking-head-text` — image + text → lip-synced video (with TTS)
@@ -10,36 +11,11 @@ The repo ships **five skills** you can install in any combination:
 - `veed-background-removal` — video → clean subject
 - `veed-product-pitch` — product + spokesperson + script → finished product spokesperson video (workflow that chains the skills above)
 
-Endpoint skills are independent — they don't share state and don't depend on each other. The workflow skill (product-pitch) chains endpoint skills but doesn't persist state between invocations.
+Because the skills share `COMMON.md`, install the **whole repo** (not individual skills). Endpoint skills are otherwise independent — they don't share state and don't depend on each other; the workflow skill (product-pitch) chains them but doesn't persist state between invocations.
 
-## Option 1 — `gh skill install` (works across 12+ agents)
+## Install — Git clone
 
-If you have [GitHub CLI](https://cli.github.com) v2.90+, this is the most portable install. `gh skill` writes to the right directory for your agent automatically (Claude Code, Cursor, Codex, Gemini CLI, GitHub Copilot, Junie, Goose, OpenHands, Amp, Cline, OpenCode, Warp, and more):
-
-```bash
-gh skill install veedana/veed-skills veed-talking-head
-gh skill install veedana/veed-skills veed-talking-head-text
-gh skill install veedana/veed-skills veed-subtitles
-gh skill install veedana/veed-skills veed-background-removal
-gh skill install veedana/veed-skills veed-product-pitch
-```
-
-Project scope (current repo only) is the default. For user scope (every project on this machine):
-
-```bash
-gh skill install veedana/veed-skills veed-talking-head --scope user
-# ...etc per skill
-```
-
-Pin to a release tag for reproducibility:
-
-```bash
-gh skill install veedana/veed-skills veed-talking-head@v1.0.0 --pin
-```
-
-## Option 2 — Git clone
-
-Clone into your agent's skills directory:
+Clone the whole repo into your agent's skills directory:
 
 | Agent | Default install path |
 |---|---|
@@ -83,17 +59,10 @@ Paste this prompt to your agent (works for any install option above):
 
 **`genmedia: command not found`.** The CLI isn't installed or isn't on your PATH. See <https://github.com/fal-ai-community/genmedia-cli> for install instructions, then re-run `genmedia setup`.
 
-**Skill loads but `/veed:<name>` doesn't autocomplete.** The plugin manifest at `.claude-plugin/plugin.json` (or your host's equivalent) wasn't picked up. Most agents need a restart after installing a new plugin. For `gh skill install`, this is usually automatic; for git clone, restart your agent.
+**Skill loads but `/veed:<name>` doesn't autocomplete.** The plugin manifest at `.claude-plugin/plugin.json` (or your host's equivalent) wasn't picked up. Most agents need a restart after installing a new plugin; restart your agent after cloning.
 
 ## Upgrade
 
 ```bash
 cd ~/.claude/skills/veed-skills && git pull origin main
-```
-
-Or, if you installed via `gh skill install`:
-
-```bash
-gh skill update veedana/veed-skills veed-talking-head
-# ...per skill
 ```

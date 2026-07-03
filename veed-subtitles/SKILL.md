@@ -17,16 +17,10 @@ Auto-transcribes a video's audio (or uses an SRT you provide), styles it with
 your chosen preset, and renders a finished MP4 with the captions baked in.
 
 ## Before you start
-These skills run through the genmedia CLI, which handles model discovery,
-file upload, execution, and downloads against Fal.
-
-- Install it once — see https://github.com/fal-ai-community/genmedia-cli
-- Configure your Fal API key (get one free at https://fal.ai/dashboard/keys):
-      genmedia setup
-  Or non-interactively (agents / CI):
-      genmedia setup --non-interactive --api-key "$FAL_KEY"
-
-All commands below assume `genmedia` is on your PATH.
+Setup (genmedia CLI + Fal key), the async execution pattern, uploading local
+inputs, and common errors are shared across all VEED skills — see
+[../COMMON.md](../COMMON.md). This file covers only what's specific to
+subtitles.
 
 ## What to ask the user for
 
@@ -73,58 +67,33 @@ user hasn't already mentioned them.
    - If the user says 'defaults', 'skip', 'no preference', or similar →
      do NOT pass a customization flag in the run command
 
-## Step 1 — Handle video and SRT inputs
-
-If the user gave a local video path, upload it to Fal's CDN first:
-
-    genmedia upload /path/to/video.mp4 --json
-
-Copy the returned "url". If already a public URL, use it directly — no
-upload needed.
-
-If the user gave a local SRT file path, upload that too:
-
-    genmedia upload /path/to/captions.srt --json
-
-## Step 2 — Build the customization object (if provided)
+## Step 1 — Build the customization object (if provided)
 
 Only if the user provided overrides. Build the JSON object per
-[references/customization.md](references/customization.md) — it holds the
-full field list, the JSON shape, and the constraints (position, shadow,
-supported fonts, weight range, colour format). Any omitted field keeps the
-preset's default. You pass it on the `--customization` flag in Step 4.
+[references/customization.md](references/customization.md) — it holds the full
+field list, the JSON shape, and the constraints (position, shadow, supported
+fonts, weight range, colour format). Any omitted field keeps the preset's
+default. You pass it on the `--customization` flag in Step 3.
 
-## Step 3 — Show cost estimate before proceeding
+## Step 2 — Estimate cost and confirm
 
-Fetch the current base rate rather than relying on memorised numbers:
-
-    genmedia pricing veed/subtitles --json
-
-Subtitles are billed per minute of input video, with resolution and preset
-multipliers. Estimate and show the cost:
-- Get video duration in minutes (use ffprobe or ask the user)
+Fetch the base rate (`genmedia pricing veed/subtitles --json`). Billed per
+minute of input video, with multipliers:
 - Base rate = per-minute rate from `genmedia pricing`
 - Resolution multiplier: 2x if video is above 1080p, else 1x
-- Preset multiplier: 2x if preset is dynamic (glass, whisper, glide,
-  glide2, fusion, terminal, handwritten), else 1x
-- Estimated cost = duration_minutes x base_rate x resolution_mult x preset_mult
+- Preset multiplier: 2x if the preset is dynamic, else 1x
+- Cost = duration_minutes x base_rate x resolution_mult x preset_mult
 - Minimum charge: 1 minute
 
-Show the estimate to the user and ask them to confirm before proceeding.
-Example (indicative base rate $0.10/min): "This will cost approximately $0.40
-for a 2-minute 1080p video with the 'glass' preset (dynamic, 2x multiplier).
-Shall I proceed?"
+Show the estimate and get confirmation. Example (indicative $0.10/min base):
+"~$0.40 for a 2-minute 1080p video with 'glass' (dynamic, 2x). Proceed?"
 
-## Step 4 — Render the subtitled video
+## Step 3 — Render the subtitled video
 
-First confirm the endpoint's current input fields (Fal schemas can change):
-
-    genmedia schema veed/subtitles --json
-
-Then run the subtitles endpoint asynchronously, using the exact field names
-from the schema. `--async` submits the job and returns immediately with a
-`request_id`. Include the optional flags only when the user actually
-provided them:
+Upload the local video, and any local SRT file, per ../COMMON.md. Then follow
+the async execution pattern in ../COMMON.md (schema → run `--async` → poll →
+download). The endpoint is `veed/subtitles`; include the optional flags only
+when the user provided them:
 
     genmedia run veed/subtitles \
       --video_url "<video_url>" \
@@ -132,45 +101,18 @@ provided them:
       --async \
       --json
 
-Add any of these only if provided:
+Optional flags:
 - `--language "es-MX"` — source-audio language code
 - `--srt_file_url "<url>"` OR `--srt_content "<raw SRT>"` — supply at most one
-- `--customization '<JSON from Step 2>'` — the customization object
+- `--customization '<JSON from Step 1>'` — the customization object
 
-The flags above reflect the expected schema — if `genmedia schema` shows a
-different name, follow it.
+Download the result to `./outputs/subtitles/`, and return both the local path
+and the URL.
 
-IMPORTANT — record the `request_id` and show it to the user. The render is
-billed once submitted, so if the session is interrupted you can re-fetch the
-result with `status` instead of paying to run it again.
-
-## Step 5 — Poll for the result
-
-Check the job with the recorded `request_id` until it reports completed:
-
-    genmedia status veed/subtitles <request_id> --json
-
-Once completed, fetch the result and download the video locally in one step
-(Fal URLs expire after ~24 hours):
-
-    genmedia status veed/subtitles <request_id> \
-      --download "./outputs/subtitles/{request_id}.{ext}" \
-      --json
-
-`--download` saves the file to the given path and still returns `video.url`.
-Give the user both the local file path and the URL. If the session was
-interrupted, resume here with the same `request_id`; do NOT re-run Step 4.
-
-## After the call
-- Return both the local file path and the video.url to the user
-- The downloaded file is the durable copy — the Fal URL expires after ~24 hours
-- 401 / auth error: Fal key not configured — run `genmedia setup`
-- 422 error: video not accessible, format not supported, or invalid
-  SRT content
-- 400 error: unrecognized font name in customization — check the
-  Google Fonts list
-- 429 error: rate limit hit — wait a moment and retry
-- 500 error: model error on Fal's side — retry once before giving up
+## Errors
+Common errors (401 / 422 / 429 / 500) are in ../COMMON.md. Subtitles-specific:
+- **400** — unrecognized font name in customization; check the Google Fonts list
+- **422** — here also covers invalid SRT content
 
 ## Pricing
 Run `genmedia pricing veed/subtitles --json` for the authoritative current

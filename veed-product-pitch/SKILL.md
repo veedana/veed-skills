@@ -24,27 +24,15 @@ Generates a finished product spokesperson video in one flow:
 Maximum output: 30 seconds of talking head video (Fabric model limit).
 
 ## Before you start
-This workflow runs through the genmedia CLI, which handles model discovery,
-file upload, execution, and downloads against Fal.
+Setup (genmedia CLI + Fal key), the async execution pattern (schema → run
+`--async` → poll → download → resume), uploading local inputs, and common
+errors are shared across all VEED skills — see [../COMMON.md](../COMMON.md).
+Every `genmedia run` below follows that pattern.
 
-- Install it once — see https://github.com/fal-ai-community/genmedia-cli
-- Configure your Fal API key (get one free at https://fal.ai/dashboard/keys):
-      genmedia setup
-  Or non-interactively (agents / CI):
-      genmedia setup --non-interactive --api-key "$FAL_KEY"
-
-All commands below assume `genmedia` is on your PATH.
-
-Before every `genmedia run` in this workflow, confirm the endpoint's current
-input fields with `genmedia schema <endpoint> --json` and use the exact field
-names it lists — Fal schemas can change, and the flags shown in each step
-reflect the expected schema rather than a guarantee.
-
-This workflow reuses the same endpoints as the standalone veed-talking-head,
-veed-talking-head-text, and veed-subtitles skills. Those skills are the source
-of truth for their full option sets (voice descriptions, the complete subtitle
-preset gallery, customization). If you have them installed, defer to them for
-detail; the essentials needed to run this workflow standalone are inline below.
+This workflow reuses the veed-talking-head, veed-talking-head-text, and
+veed-subtitles skills' endpoints; those skills are the source of truth for
+their full option sets (voice descriptions, the subtitle preset gallery,
+customization). Defer to them for detail.
 
 ## What to ask the user for
 
@@ -219,31 +207,17 @@ If mode == "text", run Fabric 1.0 Text with `--async` (add
       --async \
       --json
 
-Set `--resolution` to `720p` if the user chose it. Both return a
-`request_id` — record it and show it to the user; the run is billed once
-submitted.
-
-Poll for the result with the endpoint you ran (`veed/fabric-1.0` or
-`veed/fabric-1.0/text`):
-
-    genmedia status veed/fabric-1.0 <request_id> --json
-
-Take `video.url` from the completed result as video_url. If the session was
-interrupted, resume here with the same `request_id`; do NOT re-run the job.
+Use `720p` if the user chose it. Poll for the result per ../COMMON.md with
+the endpoint you ran, and take `video.url` as video_url.
 
 If subtitle_preset is None, this talking head is the final output — download
-it locally (Fal URLs expire after ~24 hours) and return both to the user:
-
-    genmedia status veed/fabric-1.0 <request_id> \
-      --download "./outputs/product-pitch/{request_id}.{ext}" \
-      --json
-
-Then stop here. If subtitle_preset is set, do NOT download the intermediate —
-just keep video_url and continue to Step 6.
+it to `./outputs/product-pitch/` (per ../COMMON.md) and return both the path
+and URL, then stop. If subtitle_preset is set, do NOT download the
+intermediate — keep video_url and continue to Step 6.
 
 ## Step 6 — Add subtitles (only if subtitle_preset is set)
 
-Run the subtitles endpoint asynchronously using video_url as the input.
+Run the subtitles endpoint (async, per ../COMMON.md) using video_url as input.
 Add `--customization` only if the user provided overrides:
 
     genmedia run veed/subtitles \
@@ -254,41 +228,22 @@ Add `--customization` only if the user provided overrides:
 
 If subtitle_customization is set, build the JSON object per the veed-subtitles
 skill (the source of truth for its shape and constraints) and pass it as
-`--customization '<JSON>'`.
+`--customization '<JSON>'`. Keep `video_url` — on a resume you re-run only the
+subtitles step, not the paid talking-head step.
 
-This returns a `request_id` — record it and show it to the user. Keep
-`video_url` (the talking head from Step 5) too: on a resume you re-run only
-the subtitles step, not the paid talking-head step. Poll for the result:
+Download the final video to `./outputs/product-pitch/` (per ../COMMON.md) as
+final_video_url, and give the user both the local path and the URL.
 
-    genmedia status veed/subtitles <request_id> --json
-
-Once completed, download the final video locally (Fal URLs expire after
-~24 hours):
-
-    genmedia status veed/subtitles <request_id> \
-      --download "./outputs/product-pitch/{request_id}.{ext}" \
-      --json
-
-Take `video.url` from the completed result as final_video_url, and give the
-user both the local file path and the URL. If the session was interrupted,
-resume here with the same `request_id`; do NOT re-run the job.
-
-Do not ask the user about language or SRT input — for this workflow,
-auto-transcription is used. If the user needs language or SRT control,
-suggest running veed-subtitles separately afterwards.
-
-Return final_video_url to the user.
+Do not ask the user about language or SRT input — this workflow uses
+auto-transcription. If the user needs language or SRT control, suggest running
+veed-subtitles separately afterwards.
 
 ## After the call
-- Return both the local file path and the final video URL to the user
-- The downloaded file is the durable copy — the Fal URL expires after ~24 hours
-- 401 / auth error: Fal key not configured — run `genmedia setup`
-- 422 error: an input image/audio is not accessible, in a bad format,
-  or the audio/script exceeds Fabric's 30-second cap
-- 429 error: rate limit — wait a moment and retry
-- 500 error: one of the underlying models had an issue. Identify which
-  step failed (product gen / spokesperson gen / composite / talking head
-  / subtitles) and retry that step only — don't restart the whole flow.
+- Return both the local file path and the final video URL to the user.
+- Common errors (401 / 422 / 429 / 500) are in ../COMMON.md. Workflow-specific:
+  on a 500, identify which step failed (product gen / spokesperson gen /
+  composite / talking head / subtitles) and retry that step only — don't
+  restart the whole flow. A 422 often means an input exceeds Fabric's 30s cap.
 
 ## Pricing
 This skill chains multiple models — run `genmedia pricing <endpoint> --json`
