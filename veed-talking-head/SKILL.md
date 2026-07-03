@@ -73,7 +73,11 @@ Shall I proceed?"
 
 ## Step 3 — Generate the video
 
-Run Fabric 1.0 with the image and audio URLs:
+First confirm the endpoint's current input fields (Fal schemas can change):
+
+    genmedia schema veed/fabric-1.0 --json
+
+Then run Fabric 1.0, using the exact field names from the schema:
 
     genmedia run veed/fabric-1.0 \
       --image_url "<image_url>" \
@@ -81,7 +85,8 @@ Run Fabric 1.0 with the image and audio URLs:
       --resolution 480p \
       --json
 
-Set `--resolution` to `720p` if the user chose it.
+Set `--resolution` to `720p` if the user chose it. The flags above reflect
+the expected schema — if `genmedia schema` shows a different name, follow it.
 
 The result JSON contains `video.url` — return it to the user.
 

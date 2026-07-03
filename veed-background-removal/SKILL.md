@@ -79,7 +79,11 @@ with Refine ON. Shall I proceed?"
 
 ## Step 4 — Remove the background
 
-Run the chosen endpoint:
+First confirm the endpoint's current input fields (Fal schemas can change):
+
+    genmedia schema veed/video-background-removal --json
+
+Then run the chosen endpoint, using the exact field names from the schema:
 
     genmedia run veed/video-background-removal \
       --video_url "<video_url>" \
@@ -87,7 +91,9 @@ Run the chosen endpoint:
       --json
 
 Swap the endpoint for the fast or green-screen variant per Step 1, and set
-`--refine_foreground_edges` to `false` if the user chose OFF.
+`--refine_foreground_edges` to `false` if the user chose OFF. The flags above
+reflect the expected schema — if `genmedia schema` shows a different name,
+follow it.
 
 The result JSON contains `video.url` — return it to the user.
 

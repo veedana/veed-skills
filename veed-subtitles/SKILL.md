@@ -150,8 +150,12 @@ with the 'glass' preset (dynamic, 2x multiplier). Shall I proceed?"
 
 ## Step 4 — Render the subtitled video
 
-Run the subtitles endpoint. Include the optional flags only when the user
-actually provided them:
+First confirm the endpoint's current input fields (Fal schemas can change):
+
+    genmedia schema veed/subtitles --json
+
+Then run the subtitles endpoint, using the exact field names from the
+schema. Include the optional flags only when the user actually provided them:
 
     genmedia run veed/subtitles \
       --video_url "<video_url>" \
@@ -162,6 +166,9 @@ Add any of these only if provided:
 - `--language "es-MX"` — source-audio language code
 - `--srt_file_url "<url>"` OR `--srt_content "<raw SRT>"` — supply at most one
 - `--customization '<JSON from Step 2>'` — the customization object
+
+The flags above reflect the expected schema — if `genmedia schema` shows a
+different name, follow it.
 
 The result JSON contains `video.url` — return it to the user.
 

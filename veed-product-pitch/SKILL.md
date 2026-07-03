@@ -41,6 +41,11 @@ file upload, execution, and downloads against Fal.
 
 All commands below assume `genmedia` is on your PATH.
 
+Before every `genmedia run` in this workflow, confirm the endpoint's current
+input fields with `genmedia schema <endpoint> --json` and use the exact field
+names it lists — Fal schemas can change, and the flags shown in each step
+reflect the expected schema rather than a guarantee.
+
 ## What to ask the user for
 
 Collect ALL of the following before showing the cost estimate.

@@ -82,7 +82,12 @@ approximately $0.72 at 720p. Shall I proceed?"
 
 ## Step 3 — Generate the video
 
-Run Fabric 1.0 Text. Include `--voice_description` ONLY if the user gave one:
+First confirm the endpoint's current input fields (Fal schemas can change):
+
+    genmedia schema veed/fabric-1.0/text --json
+
+Then run Fabric 1.0 Text, using the exact field names from the schema.
+Include `--voice_description` ONLY if the user gave one:
 
     genmedia run veed/fabric-1.0/text \
       --image_url "<image_url>" \
@@ -94,7 +99,8 @@ If the user provided a voice description, add:
 
       --voice_description "<voice description>"
 
-Set `--resolution` to `720p` if the user chose it.
+Set `--resolution` to `720p` if the user chose it. The flags above reflect
+the expected schema — if `genmedia schema` shows a different name, follow it.
 
 The result JSON contains `video.url` — return it to the user.
 
