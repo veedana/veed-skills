@@ -3,7 +3,8 @@ version: 1.0.0
 name: veed-subtitles
 description: >
   Burn styled, auto-transcribed subtitles into any video with VEED's Subtitles
-  API — 30 styled presets, 125+ source languages, optional SRT input. Use when the
+  API — 30 styled presets, 125+ source languages, optional translation and SRT
+  input. Use when the
   user wants captions rendered onto a video: "add subtitles to this video",
   "burn in captions", "caption this in Spanish". NOT for: producing a
   standalone .srt without rendering (this always returns a video with the
@@ -13,8 +14,9 @@ description: >
 # VEED Subtitles
 
 ## What this skill does
-Auto-transcribes a video's audio (or uses an SRT you provide), styles it with
-your chosen preset, and renders a finished MP4 with the captions baked in.
+Auto-transcribes a video's audio (or uses an SRT you provide), optionally
+translates it, styles it with your chosen preset, and renders a finished MP4
+with the captions baked in.
 
 ## Before you start
 Setup (genmedia CLI + Fal key), the async execution pattern, uploading local
@@ -24,9 +26,9 @@ subtitles.
 
 ## What to ask the user for
 
-Collect the following before proceeding. Items 1, 2, and 5 are mandatory
-questions to ask the user — items 3 and 4 only need to be raised if the
-user hasn't already mentioned them.
+Collect the following before proceeding. Items 1, 2, and 7 are mandatory
+questions to ask the user — items 3–6 only need to be raised if the user
+hasn't mentioned them or the use-case calls for it.
 
 1. Video — a local file path (e.g. /Users/ana/Desktop/video.mp4) or
    a public URL. Accepted formats: MP4, MOV, WEBM, M4V, GIF
@@ -41,23 +43,30 @@ user hasn't already mentioned them.
    user is unsure, suggest "glass" (dynamic) for social or "simple" (basic)
    for utility.
 
-3. Language (optional) — source-audio language code (e.g. en-US, es-MX,
-   ja-JP, fr-FR). Improves transcription accuracy. Leave blank to
-   auto-detect.
-   IMPORTANT: this is the source-audio language, not the output language.
-   Subtitles render in the same language as the audio. The model supports
-   125+ language codes — if the user names a language, map it to the
-   closest BCP-47 code (e.g. "Spanish (Mexico)" → es-MX, "Brazilian
-   Portuguese" → pt-BR).
+3. Language (optional) — the source-audio language code, to improve
+   transcription accuracy (e.g. en-US, es-MX, ja-JP, fr-FR). Leave blank to
+   auto-detect. The API accepts a fixed set of ~160 BCP-47 codes; if the user
+   names a language, map it to the closest (e.g. "Spanish (Mexico)" → es-MX,
+   "Brazilian Portuguese" → pt-BR).
 
-4. Existing subtitles (optional) — if the user already has an SRT, ask:
+4. Translate output (optional) — by default subtitles are rendered in the
+   spoken language. To render them in a DIFFERENT language, set
+   translation_language to the target BCP-47 code. (If you also supply an SRT,
+   set language to its source language for a reliable translation.)
+
+5. Existing subtitles (optional) — if the user already has an SRT, ask:
    - srt_file_url — a public URL to a .srt file (or a local path,
      which you'll upload to Fal), OR
    - srt_content — raw SRT text pasted in
    Only one of these should be supplied. If neither is provided, the
    model auto-transcribes the audio.
 
-5. Customization — ALWAYS ask this question explicitly. Do not skip it
+6. Custom vocabulary (optional) — brand names, product names, or jargon the
+   transcriber commonly mis-spells (e.g. "VEED" heard as "vid"). Collect as
+   {word, replaces} entries — the correct term plus the misspellings to swap
+   out. Up to 100 entries; ignored when an SRT is supplied.
+
+7. Customization — ALWAYS ask this question explicitly. Do not skip it
    even though customization is optional in the API.
    Say to the user: "Do you want to customize the subtitle look, or use
    the preset defaults? You can override the position, shadow intensity,
@@ -105,7 +114,9 @@ when the user provided them:
 
 Optional flags:
 - `--language "es-MX"` — source-audio language code
+- `--translation_language "<code>"` — render subtitles in a different language
 - `--srt_file_url "<url>"` OR `--srt_content "<raw SRT>"` — supply at most one
+- `--vocabulary '[{"word":"VEED","replaces":["vid","veet"]}]'` — brand/jargon fixes
 - `--customization '<JSON from Step 1>'` — the customization object
 
 Download the result to `./outputs/subtitles/`, and return both the local path

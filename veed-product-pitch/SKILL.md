@@ -234,9 +234,9 @@ subtitles step, not the paid talking-head step.
 Download the final video to `./outputs/product-pitch/` (per ../COMMON.md) as
 final_video_url, and give the user both the local path and the URL.
 
-Do not ask the user about language or SRT input — this workflow uses
-auto-transcription. If the user needs language or SRT control, suggest running
-veed-subtitles separately afterwards.
+Do not ask the user about language, translation, SRT, or vocabulary — this
+workflow uses plain auto-transcription. If the user needs any of that control,
+suggest running veed-subtitles separately afterwards.
 
 ## After the call
 - Return both the local file path and the final video URL to the user.
