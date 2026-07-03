@@ -114,14 +114,20 @@ Check the job with the recorded `request_id` until it reports completed:
 
     genmedia status veed/fabric-1.0/text <request_id> --json
 
-The completed result JSON contains `video.url` — return it to the user. If
-the session was interrupted, resume here with the same `request_id`; do NOT
-re-run Step 3.
+Once completed, fetch the result and download the video locally in one step
+(Fal URLs expire after ~24 hours):
+
+    genmedia status veed/fabric-1.0/text <request_id> \
+      --download "./outputs/talking-head-text/{request_id}.{ext}" \
+      --json
+
+`--download` saves the file to the given path and still returns `video.url`.
+Give the user both the local file path and the URL. If the session was
+interrupted, resume here with the same `request_id`; do NOT re-run Step 3.
 
 ## After the call
-- Return the video.url to the user
-- Warn the user that Fal URLs expire after ~24 hours — download locally
-  if they want to keep it
+- Return both the local file path and the video.url to the user
+- The downloaded file is the durable copy — the Fal URL expires after ~24 hours
 - 401 / auth error: Fal key not configured — run `genmedia setup`
 - 422 error: image not accessible, wrong format, or script too long
 - 429 error: rate limit — wait a moment and retry

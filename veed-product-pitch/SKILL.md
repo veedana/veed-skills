@@ -236,7 +236,15 @@ Poll for the result with the endpoint you ran (`veed/fabric-1.0` or
 Take `video.url` from the completed result as video_url. If the session was
 interrupted, resume here with the same `request_id`; do NOT re-run the job.
 
-If subtitle_preset is None: return video_url to the user and stop here.
+If subtitle_preset is None, this talking head is the final output — download
+it locally (Fal URLs expire after ~24 hours) and return both to the user:
+
+    genmedia status veed/fabric-1.0 <request_id> \
+      --download "./outputs/product-pitch/{request_id}.{ext}" \
+      --json
+
+Then stop here. If subtitle_preset is set, do NOT download the intermediate —
+just keep video_url and continue to Step 6.
 
 ## Step 6 — Add subtitles (only if subtitle_preset is set)
 
@@ -276,8 +284,16 @@ the subtitles step, not the paid talking-head step. Poll for the result:
 
     genmedia status veed/subtitles <request_id> --json
 
-Take `video.url` from the completed result as final_video_url. If the session
-was interrupted, resume here with the same `request_id`; do NOT re-run the job.
+Once completed, download the final video locally (Fal URLs expire after
+~24 hours):
+
+    genmedia status veed/subtitles <request_id> \
+      --download "./outputs/product-pitch/{request_id}.{ext}" \
+      --json
+
+Take `video.url` from the completed result as final_video_url, and give the
+user both the local file path and the URL. If the session was interrupted,
+resume here with the same `request_id`; do NOT re-run the job.
 
 Do not ask the user about language or SRT input — for this workflow,
 auto-transcription is used. If the user needs language or SRT control,
@@ -286,9 +302,8 @@ suggest running veed-subtitles separately afterwards.
 Return final_video_url to the user.
 
 ## After the call
-- Return the final video URL to the user
-- Warn the user that Fal URLs expire after ~24 hours — download the
-  file locally if they want to keep it
+- Return both the local file path and the final video URL to the user
+- The downloaded file is the durable copy — the Fal URL expires after ~24 hours
 - 401 / auth error: Fal key not configured — run `genmedia setup`
 - 422 error: an input image/audio is not accessible, in a bad format,
   or the audio/script exceeds Fabric's 30-second cap
