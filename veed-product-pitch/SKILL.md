@@ -46,6 +46,12 @@ input fields with `genmedia schema <endpoint> --json` and use the exact field
 names it lists — Fal schemas can change, and the flags shown in each step
 reflect the expected schema rather than a guarantee.
 
+This workflow reuses the same endpoints as the standalone veed-talking-head,
+veed-talking-head-text, and veed-subtitles skills. Those skills are the source
+of truth for their full option sets (voice descriptions, the complete subtitle
+preset gallery, customization). If you have them installed, defer to them for
+detail; the essentials needed to run this workflow standalone are inline below.
+
 ## What to ask the user for
 
 Collect ALL of the following before showing the cost estimate.
@@ -100,11 +106,11 @@ Do not skip any question, even if the user gave you a one-line brief.
 6. Subtitles — ask: "Do you want subtitles burned into the final video?"
    - If yes → ask which preset. Say to the user: "Which subtitle style?
      The dynamic presets (glass, whisper, glide2, fusion, glide, terminal,
-     handwritten) are richer and best for social content. Basic presets
-     (simple, plain, beans, corpo, boo, shadeplay, casper, capri, lowkey,
-     vinta, diego, ali, slay, kitty, hustle, karl, sprout, flex, mint,
-     rizz, vegas) are lightweight. Default suggestion: 'glass'."
-     Store as subtitle_preset.
+     handwritten) are richer and best for social content; there are also 21
+     lightweight basic presets. Default suggestion: 'glass'." (See the
+     veed-subtitles skill for the full preset gallery.)
+     Store as subtitle_preset. Note the dynamic presets carry a 2x cost
+     multiplier — this matters for the estimate in Step 1.
      Then ALWAYS ask a follow-up about customization. Say to the user:
      "Do you want to customize the subtitle look, or use the preset
      defaults? You can override any of these:
@@ -279,13 +285,12 @@ the user gave and pass it as `--customization '<JSON>'`. Example:
       }
     }
 
-Constraints:
-- position: top, center, or bottom
-- shadow: none, min, mid, or max
-- font: must be a supported Google Font — see
-  https://www.veed.io/api/v1/subtitle-renders/fonts
-- weight: 100-900
-- color: hex string (e.g. "#FFFFFF")
+Field constraints (position, shadow, supported fonts, weight range, colour
+format, and the per-tier meaning of accessible / highlighted / viral) are
+documented in full by the veed-subtitles skill — follow it as the source of
+truth. In short: position is top/center/bottom, shadow is none/min/mid/max,
+font must be a supported Google Font, weight is 100-900, colour is a hex
+string.
 
 This returns a `request_id` — record it and show it to the user. Keep
 `video_url` (the talking head from Step 5) too: on a resume you re-run only
