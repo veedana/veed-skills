@@ -77,26 +77,19 @@ Do not skip any question, even if the user gave you a one-line brief.
    - If the user provides text → store as script_text, set mode = "text"
    - Accepted audio formats: MP3, WAV, M4A, AAC
 
-4. Voice description — ONLY ask this if mode == "text". Say to the user:
-   "How would you like the voice to sound? For best results, describe
-   multiple attributes — gender, age, accent, tone, energy. For example:
-   'Professional female voice, mid-30s, British accent, warm and
-   confident' works much better than just 'British accent'. Or say
-   'auto' to let VEED pick a voice based on the spokesperson image."
-   - If the user provides a specific description (anything other than an
-     opt-out phrase below) → store as voice_description
-   - If the user says ANY of: 'auto', 'skip', 'no preference', 'you
-     pick', 'doesn't matter', 'default', or any other phrase indicating
-     no preference → set voice_description to None.
+4. Voice description — ONLY ask this if mode == "text". Ask the user how
+   they want the voice to sound, encouraging multiple attributes (gender,
+   age, accent, tone, energy) over a bare one-liner, or 'auto' to let VEED
+   pick from the spokesperson image. See
+   [references/voice-description.md](references/voice-description.md) for the
+   exact phrasing and the short-description follow-up.
+   - If the user provides a specific description → store as voice_description
+   - If the user says ANY of: 'auto', 'skip', 'no preference', 'you pick',
+     'doesn't matter', 'default', or any similar opt-out → set
+     voice_description to None.
    CRITICAL: Do NOT store the literal string "auto" (or similar opt-out
    phrases) as voice_description. Fabric would interpret it as a voice
    description verbatim and produce a strange-sounding voice.
-   If the user gave a very short description (1-3 words like "British
-   accent"), gently prompt them to add more detail. Say: "That's a
-   good start — to get the best voice match, could you add a bit more?
-   E.g., gender, age range, and overall tone (calm / energetic /
-   authoritative)?" Then update voice_description with their fuller
-   answer.
 
 5. Resolution — ask: "Which resolution do you want?
    - 480p — $0.08 per second of output video
@@ -111,17 +104,10 @@ Do not skip any question, even if the user gave you a one-line brief.
      veed-subtitles skill for the full preset gallery.)
      Store as subtitle_preset. Note the dynamic presets carry a 2x cost
      multiplier — this matters for the estimate in Step 1.
-     Then ALWAYS ask a follow-up about customization. Say to the user:
-     "Do you want to customize the subtitle look, or use the preset
-     defaults? You can override any of these:
-     - Position — top, center, or bottom
-     - Shadow intensity — none, min, mid, or max (improves readability
-       over busy backgrounds)
-     - Per-tier text styling — font, weight (100-900), and hex colour
-       for each of the three word-importance tiers: accessible (every
-       word), highlighted (mid-rank words), viral (top-rank hook words)
-     Any field you leave out keeps the preset's default. Say 'defaults'
-     or 'skip' if you want to use the preset as-is."
+     Then ALWAYS ask a follow-up about customization: whether they want to
+     override the subtitle look (position, shadow, per-word-tier font /
+     weight / colour) or use the preset defaults. The veed-subtitles skill
+     is the source of truth for the full option set and constraints.
      - If the user provides overrides → build a subtitle_customization
        JSON object (see Step 6 below) and store it
      - If the user says 'defaults', 'skip', 'no preference', or similar →
@@ -272,25 +258,9 @@ Add `--customization` only if the user provided overrides:
       --async \
       --json
 
-If subtitle_customization is set, build the JSON object matching the values
-the user gave and pass it as `--customization '<JSON>'`. Example:
-
-    {
-      "position": "bottom",
-      "shadow": "mid",
-      "text_customizations": {
-        "accessible":  {"font": "Inter", "weight": 500, "color": "#FFFFFF"},
-        "highlighted": {"font": "Inter", "weight": 700, "color": "#FFD500"},
-        "viral":       {"font": "Inter", "weight": 900, "color": "#FF2E63"}
-      }
-    }
-
-Field constraints (position, shadow, supported fonts, weight range, colour
-format, and the per-tier meaning of accessible / highlighted / viral) are
-documented in full by the veed-subtitles skill — follow it as the source of
-truth. In short: position is top/center/bottom, shadow is none/min/mid/max,
-font must be a supported Google Font, weight is 100-900, colour is a hex
-string.
+If subtitle_customization is set, build the JSON object per the veed-subtitles
+skill (the source of truth for its shape and constraints) and pass it as
+`--customization '<JSON>'`.
 
 This returns a `request_id` — record it and show it to the user. Keep
 `video_url` (the talking head from Step 5) too: on a resume you re-run only
@@ -327,23 +297,7 @@ Return final_video_url to the user.
   / subtitles) and retry that step only — don't restart the whole flow.
 
 ## Pricing
-This skill chains multiple models. Run `genmedia pricing <endpoint> --json`
-for each endpoint for authoritative current rates. Indicative per-call costs
-at time of writing:
-- Nano Banana (generation): $0.039 per image
-- Nano Banana (edit/composite): $0.039 per call
-- Fabric 1.0 (audio): $0.08/sec at 480p, $0.15/sec at 720p
-- Fabric 1.0 text: $0.08/sec at 480p, $0.15/sec at 720p
-- Subtitles: $0.10/min base, 2x for dynamic presets, 1-minute minimum
-
-Typical end-to-end cost for a 10-second video at 720p with subtitles
-where both images are user-uploaded: ~$1.70
-Typical end-to-end cost for a 10-second video at 720p with subtitles
-where both images are AI-generated: ~$1.82
-
-Model pages:
-- Nano Banana: https://fal.ai/models/fal-ai/gemini-25-flash-image
-- Nano Banana edit: https://fal.ai/models/fal-ai/gemini-25-flash-image/edit
-- Fabric audio: https://fal.ai/models/veed/fabric-1.0
-- Fabric text: https://fal.ai/models/veed/fabric-1.0/text
-- Subtitles: https://fal.ai/models/veed/subtitles
+This skill chains multiple models — run `genmedia pricing <endpoint> --json`
+per endpoint for authoritative current rates. Indicative per-call costs,
+typical end-to-end totals, and model pages are in
+[references/pricing.md](references/pricing.md).

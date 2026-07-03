@@ -33,9 +33,9 @@ veed-skills/
 ├── .cursor-plugin/plugin.json      # Cursor manifest
 ├── veed-talking-head/SKILL.md      # Endpoint skill
 ├── veed-talking-head-text/SKILL.md # Endpoint skill
-├── veed-subtitles/SKILL.md         # Endpoint skill
+├── veed-subtitles/                 # Endpoint skill (+ references/: presets, customization)
 ├── veed-background-removal/SKILL.md # Endpoint skill
-└── veed-product-pitch/SKILL.md     # Workflow skill (chains endpoint skills)
+└── veed-product-pitch/             # Workflow skill (+ references/: voice-description, pricing)
 ```
 
 There is **no root SKILL.md**. Endpoint skills are independent; the workflow skill (product-pitch) chains them but shares no state between invocations.
@@ -75,8 +75,8 @@ The `description` field is what agents read to decide whether to invoke the skil
 
 Each `SKILL.md` is injected into every prompt turn the agent spends in that skill. Token cost matters.
 
-- **Today:** every veed skill is well under 300 lines (largest is `veed-subtitles` at ~200 lines). No action needed.
-- **When a SKILL.md grows past ~300 lines:** migrate procedural detail, gallery tables, and error matrices into a sibling `references/` folder loaded on demand (`See references/preset-gallery.md for the full preset list.`). Keep the SKILL.md as a thin decision tree + pointers.
+- **Today:** `veed-product-pitch` (~300 lines) and `veed-subtitles` disclose material to a sibling `references/` folder; the other three are well under 300 with no references.
+- **When a SKILL.md grows past ~300 lines:** migrate procedural detail, gallery tables, and error matrices into a sibling `references/` folder loaded on demand (`See references/presets.md for the full preset list.`). Keep the SKILL.md as a thin decision tree + pointers.
 - **What stays in SKILL.md regardless:** frontmatter, the decision tree for which mode/path to take, critical rules that apply every turn, short pointers to references.
 - **The test:** if removing a section from `SKILL.md` would *not* break the agent's ability to decide what to do next, it belongs in `references/`. If it would, it stays.
 
@@ -88,7 +88,7 @@ Each skill must be installable on its own via `gh skill install veedana/veed-ski
 - Every file mentioned in `SKILL.md` exists in the skill's bundle.
 - Conversely, every file in `references/` and `scripts/` is mentioned (linked) from `SKILL.md` — no orphans.
 
-(Today no skill ships `references/` or `scripts/`. This is enforced lazily; document the rule now so the convention holds when the first one is added.)
+(`veed-subtitles` ships `references/presets.md` + `references/customization.md`; `veed-product-pitch` ships `references/voice-description.md` + `references/pricing.md`. No skill ships `scripts/` yet.)
 
 ## Key decisions
 

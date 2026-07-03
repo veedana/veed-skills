@@ -44,18 +44,12 @@ user hasn't already mentioned them.
    a public URL. Accepted formats: MP4, MOV, WEBM, M4V, GIF
    Tip on Mac: right-click file in Finder → hold Option → Copy as Pathname
 
-2. Preset — which subtitle style they want. Two tiers:
-   - Dynamic presets (2x multiplier) — richer, context-aware rendering
-     that adapts to the input. Best for social / hook content:
-     glass, whisper, glide2, fusion, glide, terminal, handwritten
-   - Basic presets (1x multiplier) — fixed, lightweight styling with
-     predictable output. Best for utility captioning or high-volume
-     pipelines:
-     simple, plain, beans, corpo, boo, shadeplay, casper, capri, lowkey,
-     vinta, diego, ali, slay, kitty, hustle, karl, sprout, flex, mint,
-     rizz, vegas
-   If the user is unsure, suggest "glass" (dynamic) for social content
-   or "simple" (basic) for plain utility captioning.
+2. Preset — which subtitle style they want. 27 presets in two tiers:
+   dynamic (2x cost multiplier, richer, best for social) and basic (1x,
+   lightweight). The dynamic presets are: glass, whisper, glide2, fusion,
+   glide, terminal, handwritten. For the full gallery and guidance see
+   [references/presets.md](references/presets.md). If the user is unsure,
+   suggest "glass" (dynamic) for social or "simple" (basic) for utility.
 
 3. Language (optional) — source-audio language code (e.g. en-US, es-MX,
    ja-JP, fr-FR). Improves transcription accuracy. Leave blank to
@@ -76,22 +70,12 @@ user hasn't already mentioned them.
 5. Customization — ALWAYS ask this question explicitly. Do not skip it
    even though customization is optional in the API.
    Say to the user: "Do you want to customize the subtitle look, or use
-   the preset defaults? You can override any of these:
-   - Position — top, center, or bottom (default: preset's default)
-   - Shadow intensity — none, min, mid, or max (improves readability
-     over busy backgrounds)
-   - Per-tier text styling — font, weight (100-900), and hex colour for
-     each of the three word-importance tiers:
-       - accessible: baseline styling applied to every word
-       - highlighted: mid-rank words (key nouns, action verbs, salient
-         adjectives) — presets typically bump size or weight here
-       - viral: top-rank 'hook' words, only a handful per video (note:
-         some presets don't use this tier, so overrides are a no-op
-         on those)
-   Any field you leave out keeps the preset's default. Say 'defaults'
-   or 'skip' if you want to use the preset as-is."
+   the preset defaults? You can override the position, shadow intensity,
+   and per-word-tier text styling (font, weight, colour). Say 'defaults'
+   or 'skip' to use the preset as-is." The full set of options and their
+   meanings is in [references/customization.md](references/customization.md).
    - If the user provides overrides → build a customization JSON object
-     (see Step 2 below) and pass it in the run command
+     (see Step 2 and references/customization.md) and pass it in the run
    - If the user says 'defaults', 'skip', 'no preference', or similar →
      do NOT pass a customization flag in the run command
 
@@ -110,28 +94,11 @@ If the user gave a local SRT file path, upload that too:
 
 ## Step 2 — Build the customization object (if provided)
 
-Only build this if the user provided overrides. Any omitted field keeps
-the preset's default. Pass it as a JSON string on the `--customization` flag:
-
-    {
-      "position": "bottom",
-      "shadow": "mid",
-      "text_customizations": {
-        "accessible":  {"font": "Inter", "weight": 500, "color": "#FFFFFF"},
-        "highlighted": {"font": "Inter", "weight": 700, "color": "#FFD500"},
-        "viral":       {"font": "Inter", "weight": 900, "color": "#FF2E63"}
-      }
-    }
-
-Constraints:
-- position: top, center, or bottom
-- shadow: none, min, mid, or max
-- font: must be a supported Google Font — see
-  https://www.veed.io/api/v1/subtitle-renders/fonts for the canonical
-  list. Unrecognized fonts return a 400.
-- weight: 100-900. Values >= 700 render as bold.
-- color: hex string (e.g. "#FFFFFF")
-- The "viral" tier is a no-op on presets that don't use it.
+Only if the user provided overrides. Build the JSON object per
+[references/customization.md](references/customization.md) — it holds the
+full field list, the JSON shape, and the constraints (position, shadow,
+supported fonts, weight range, colour format). Any omitted field keeps the
+preset's default. You pass it on the `--customization` flag in Step 4.
 
 ## Step 3 — Show cost estimate before proceeding
 
