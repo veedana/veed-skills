@@ -14,9 +14,8 @@ description: >
 # VEED Talking Head — Fabric 1.0
 
 ## What this skill does
-Takes a static image and audio file and produces a video where the person's
-lips sync to the audio. Maximum duration: 30 seconds per generation.
-Powered by VEED's Fabric 1.0 model on Fal.
+Lip-syncs the face in an image to a provided audio file. Max 30 seconds of
+output per generation.
 
 ## Before you start
 These skills run through the genmedia CLI, which handles model discovery,

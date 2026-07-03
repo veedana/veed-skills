@@ -12,9 +12,8 @@ description: >
 # VEED Background Removal
 
 ## What this skill does
-Takes a video and removes the background, returning a clean video with
-just the subject. Three modes available depending on use case.
-Powered by VEED's Background Removal API on Fal.
+Removes the background from a video, returning just the subject. Three modes:
+standard, fast, and green screen.
 
 ## Before you start
 These skills run through the genmedia CLI, which handles model discovery,

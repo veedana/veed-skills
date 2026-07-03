@@ -14,10 +14,8 @@ description: >
 # VEED Talking Head — Text to Video (Fabric 1.0)
 
 ## What this skill does
-Takes a static image and a text script. VEED's AI voice generator converts
-the text to speech and syncs it to the image. No audio file needed.
-Maximum generation: 30 seconds of output video.
-Powered by VEED's Fabric 1.0 Text model on Fal.
+Generates speech from a text script and lip-syncs it to the image — no audio
+file needed. Max 30 seconds of output per generation.
 
 ## Before you start
 These skills run through the genmedia CLI, which handles model discovery,

@@ -16,11 +16,8 @@ description: >
 # VEED Subtitles
 
 ## What this skill does
-Takes a video and burns styled subtitles into it, returning a finished MP4
-with captions baked in. VEED auto-transcribes the audio (or uses an SRT
-you provide), styles it with the preset of your choice, and renders the
-output. Supports 125+ source languages and 27 visual presets.
-Powered by VEED's Subtitles API on Fal.
+Auto-transcribes a video's audio (or uses an SRT you provide), styles it with
+your chosen preset, and renders a finished MP4 with the captions baked in.
 
 ## Before you start
 These skills run through the genmedia CLI, which handles model discovery,
