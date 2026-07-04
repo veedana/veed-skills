@@ -8,35 +8,13 @@
     {
       "name": "veed",
       "source": "./",
-      "description": "VEED Skills — agentic AI video creation. Use /veed:talking-head and /veed:talking-head-text to animate any photo into a presenter, /veed:subtitles to add styled captions, /veed:background-removal to extract subjects from video, and /veed:product-pitch to create a finished product spokesperson video in one flow.",
+      "description": "VEED Skills — agentic AI video creation: talking heads (audio- and text-driven), styled subtitles, background removal, and a product-pitch workflow, driven through the genmedia CLI against VEED's APIs on Fal.",
       "version": "1.0.0",
-      "skills": [
-        {
-          "name": "talking-head",
-          "path": "veed-talking-head",
-          "invoke": "/veed:talking-head"
-        },
-        {
-          "name": "talking-head-text",
-          "path": "veed-talking-head-text",
-          "invoke": "/veed:talking-head-text"
-        },
-        {
-          "name": "subtitles",
-          "path": "veed-subtitles",
-          "invoke": "/veed:subtitles"
-        },
-        {
-          "name": "background-removal",
-          "path": "veed-background-removal",
-          "invoke": "/veed:background-removal"
-        },
-        {
-          "name": "product-pitch",
-          "path": "veed-product-pitch",
-          "invoke": "/veed:product-pitch"
-        }
-      ]
+      "author": {
+        "name": "VEED",
+        "url": "https://veed.io"
+      },
+      "homepage": "https://veed.io"
     }
   ]
 }
