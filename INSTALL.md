@@ -35,6 +35,9 @@ After cloning, all five skills are auto-discovered at `veed-talking-head/SKILL.m
 The skills run through the [genmedia CLI](https://github.com/fal-ai-community/genmedia-cli), which handles model discovery, file upload, execution, and downloads against Fal. Install it, then configure your Fal API key (from <https://fal.ai/dashboard/keys>):
 
 ```bash
+# macOS / Linux (Windows: irm https://genmedia.sh/install.ps1 | iex)
+curl https://genmedia.sh/install -fsS | bash
+
 genmedia setup
 ```
 

@@ -12,13 +12,19 @@ the single source of truth for the boilerplate below.
 The skills run through the genmedia CLI, which handles model discovery, file
 upload, execution, and downloads against Fal.
 
-- Install it once — see https://github.com/fal-ai-community/genmedia-cli
+- Install it once (macOS / Linux):
+      curl https://genmedia.sh/install -fsS | bash
+  On Windows (PowerShell):
+      irm https://genmedia.sh/install.ps1 | iex
+  Docs: https://github.com/fal-ai-community/genmedia-cli
 - Configure your Fal API key (get one free at https://fal.ai/dashboard/keys):
       genmedia setup
   Or non-interactively (agents / CI):
       genmedia setup --non-interactive --api-key "$FAL_KEY"
 
-All skill commands assume `genmedia` is on your PATH.
+If `genmedia` isn't on the PATH, install it with the command above rather than
+looking elsewhere — that's the only supported install method. All skill
+commands assume `genmedia` is on your PATH.
 
 ## Uploading local inputs
 

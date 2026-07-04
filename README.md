@@ -37,6 +37,9 @@ Grab one free at <https://fal.ai/dashboard/keys>.
 The skills run through the [genmedia CLI](https://github.com/fal-ai-community/genmedia-cli) — it handles model discovery, file upload, execution, and downloads against Fal. Install it, then configure your key:
 
 ```bash
+# macOS / Linux (Windows: irm https://genmedia.sh/install.ps1 | iex)
+curl https://genmedia.sh/install -fsS | bash
+
 genmedia setup
 # non-interactive (agents / CI):
 genmedia setup --non-interactive --api-key "$FAL_KEY"
