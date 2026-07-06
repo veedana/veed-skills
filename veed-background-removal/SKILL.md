@@ -2,24 +2,25 @@
 version: 1.3.0
 name: veed-background-removal
 description: >
-  Remove the background from any video using VEED's Background Removal API.
-  Use when: "remove background from this video", "remove the background",
-  "make the background transparent", "extract the subject", "green screen
-  removal". Accepts local file paths or public URLs.
-  NOT for: removing backgrounds from images (video only).
+  Remove the background from a video with VEED's Background Removal API —
+  standard, fast, or green-screen mode. Use when the user wants to isolate the
+  subject or drop a video's background: "remove the background", "extract the
+  subject", "green screen removal". Accepts local paths or URLs.
+  NOT for: images (video only).
 ---
 
 # VEED Background Removal
 
 ## What this skill does
-Takes a video and removes the background, returning a clean video with
-just the subject. Three modes available depending on use case.
-Powered by VEED's Background Removal API on Fal.
+Removes the background from a video, returning just the subject — as a
+transparent WebM (default) or an MP4 on black. Three modes: standard, fast,
+and green screen.
 
 ## Before you start
-The user needs:
-- A Fal API key — get one free at https://fal.ai/dashboard/keys
-- Set it as an environment variable: export FAL_KEY=your_key_here
+Setup (genmedia CLI + Fal key), the async execution pattern, uploading local
+inputs, and common errors are shared across all VEED skills — see
+[../COMMON.md](../COMMON.md). This file covers only what's specific to
+background removal.
 
 ## What to ask the user for
 
@@ -29,88 +30,82 @@ Collect ALL of the following before proceeding:
    a public URL. Accepted formats: MP4, MOV, WEBM, MKV, AVI
    Tip on Mac: right-click file in Finder → hold Option → Copy as Pathname
 
-2. Mode — which fits their need:
-   - Standard — best quality. Default if not specified.
-   - Fast — quicker, good for high volume or testing.
-   - Green screen — specialised for green screen footage.
+2. Mode — which fits their need (sets the endpoint AND which options apply):
+   - Standard — best quality. Default. → `veed/video-background-removal`
+   - Fast — quicker, for high volume or testing. → `.../fast`
+   - Green screen — for footage shot on a green/blue screen. → `.../green-screen`
 
-3. Refine foreground edges:
-   - ON — cleaner edges, higher cost ($0.0225 per 30 frames). Default.
-   - OFF — faster, lower cost ($0.012 per 30 frames).
+3. Output codec — `output_codec`, applies to all modes:
+   - `vp9` (default) — WebM with a transparent alpha channel. Use when the
+     subject will be composited onto a new background.
+   - `h264` — MP4, no transparency (subject on black). Use for direct playback.
 
-## Step 1 — Map user choices to variables
+4. Mode-specific options:
+   - Standard / Fast:
+     - `refine_foreground_edges` (default `true`) — cleaner edges, higher cost;
+       `false` is faster and cheaper.
+     - `subject_is_person` (default `true`) — set `false` if the subject isn't
+       a person (product, animal, object).
+   - Green screen (note: these two do NOT apply — the endpoint has neither):
+     - `spill_suppression_strength` (0–1, default `0.8`) — how aggressively to
+       remove green/blue spill on the subject's edges. Raise toward 1 for heavy
+       spill; lower if edges look eroded.
 
-Based on the user's answers, set these variables:
+## Step 1 — Estimate cost and confirm
 
-# Mode → model slug
-if mode == "Standard":
-    model = "veed/video-background-removal"
-elif mode == "Fast":
-    model = "veed/video-background-removal/fast"
-elif mode == "Green screen":
-    model = "veed/video-background-removal/green-screen"
-
-# Refine edges → boolean
-refine = True if user chose ON else False
-
-## Step 2 — Handle video input
-
-If the user provided a local file path, upload it to Fal first:
-
-import fal_client
-video_url = fal_client.upload_file("/path/to/video.mp4")
-
-If already a public URL, use it directly — no upload needed.
-
-## Step 3 — Show cost estimte before proceeding
-
-Before making the API call, estimate and show the cost:
+Fetch the rate for the chosen endpoint variant
+(`genmedia pricing <endpoint> --json`). Billed per 30 frames. For standard/fast
+the rate depends on `refine_foreground_edges`; green-screen has no refine
+setting, so price it from its own `genmedia pricing`.
 
 - Get video duration in seconds (use ffprobe or ask the user)
 - Assume 30fps unless the user specifies otherwise
-- Estimated frames = duration_seconds x fps
-- Estimated cost = (frames / 30) x $0.0225 (Refine ON) or x $0.012 (Refine OFF)
+- Estimated cost = (duration_seconds x fps / 30) x price_per_30_frames
 
-Show the estimate to the user and ask them to confirm before proceeding.
-Example: "This will cost approximately $0.45 for a 10-second video at 30fps
-with Refine ON. Shall I proceed?"
+Show the estimate and get confirmation. Example (indicative standard/fast
+rate $0.0225/30f refine ON, $0.012 OFF): "~$0.45 for a 10-second 30fps clip,
+refine ON. Proceed?"
 
-## Step 4 — Remove the background
+## Step 2 — Remove the background
 
-Use fal_client.subscribe() instead of run() to handle long jobs and
-show progress:
+Upload the local video (see ../COMMON.md), then follow the async execution
+pattern in ../COMMON.md (schema → run `--async` → poll → download). The flags
+differ by mode — pass only the ones that apply.
 
-import fal_client
+Standard / Fast:
 
-def on_queue_update(update):
-    if hasattr(update, "logs"):
-        for log in update.logs:
-            print(log["message"])
+    genmedia run veed/video-background-removal \
+      --video_url "<video_url>" \
+      --refine_foreground_edges true \
+      --subject_is_person true \
+      --output_codec vp9 \
+      --async \
+      --json
 
-result = fal_client.subscribe(
-    model,
-    arguments={
-        "video_url": video_url,
-        "refine_foreground_edges": refine
-    },
-    with_logs=True,
-    on_queue_update=on_queue_update
-)
+Green screen (no `refine_foreground_edges` / `subject_is_person`):
 
-print(result["video"]["url"])
+    genmedia run veed/video-background-removal/green-screen \
+      --video_url "<video_url>" \
+      --spill_suppression_strength 0.8 \
+      --output_codec vp9 \
+      --async \
+      --json
 
-## After the call
-- Return the video.url to the user
-- Warn the user that Fal URLs expire after ~24 hours — download the
-  file locally if they want to keep it
-- 401 error: FAL_KEY is invalid or not set
-- 422 error: video not accessible or format not supported
-- 429 error: rate limit hit — wait a moment and retry
-- 500 error: model error on Fal's side — retry once before giving up
+Adjust per the user's choices (`--output_codec h264`,
+`--refine_foreground_edges false`, `--subject_is_person false`,
+`--spill_suppression_strength <0-1>`), swap in the fast endpoint if chosen,
+then download the result to `./outputs/background-removal/` and return both
+the path and the URL.
+
+## Errors
+Common errors (401 / 422 / 429 / 500) are in ../COMMON.md. Here, a 422 usually
+means the video is inaccessible or in an unsupported format.
 
 ## Pricing
-- Refine ON: $0.0225 per 30 frames
-- Refine OFF: $0.012 per 30 frames
+Run `genmedia pricing veed/video-background-removal --json` (or the fast /
+green-screen variant) for the authoritative current rate. Indicative
+(standard/fast): refine ON $0.0225 per 30 frames, refine OFF $0.012 per 30
+frames. Green-screen has no refine setting — price it from its own endpoint.
 
 Model pages:
 - Standard: https://fal.ai/models/veed/video-background-removal

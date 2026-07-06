@@ -2,20 +2,14 @@
 version: 1.0.0
 name: veed-product-pitch
 description: >
-  WORKFLOW SKILL — chains Nano Banana image generation + composition with
-  VEED's Fabric talking head and Subtitles APIs to create a finished
-  product spokesperson video in one flow. The user provides a product
-  (uploaded image or text description), a spokesperson (uploaded image or
-  text description), and what the spokesperson should say (audio or text).
-  Optionally adds burned-in subtitles. Use when: "create a product pitch
-  video", "make a spokesperson video for my product", "generate a talking
-  head video promoting [product]", "create a UGC-style ad for my brand",
-  "make a creator-style product video", "get a model to hold my product
-  and talk about it", "create a product ad with someone talking",
-  "make a testimonial-style video for my product".
-  NOT for: generating a single product image (use Nano Banana directly),
-  a talking head without a product (use veed-talking-head or
-  veed-talking-head-text).
+  WORKFLOW SKILL — chains image generation + composition, VEED Fabric talking
+  head, and VEED Subtitles into a finished product spokesperson video in one
+  flow: a person holding your product and talking about it, optionally with
+  burned-in subtitles. Use when the user wants a product ad, UGC / creator-
+  style video, or testimonial with a spokesperson: "make a product pitch
+  video", "UGC ad for my brand", "get a model to hold my product and talk
+  about it". NOT for: a single product image (use Nano Banana directly), or a
+  talking head without a product (use veed-talking-head / veed-talking-head-text).
 ---
 
 # VEED Product Pitch — Workflow Skill
@@ -30,9 +24,15 @@ Generates a finished product spokesperson video in one flow:
 Maximum output: 30 seconds of talking head video (Fabric model limit).
 
 ## Before you start
-The user needs:
-- A Fal API key — get one free at https://fal.ai/dashboard/keys
-- Set it as an environment variable: export FAL_KEY=your_key_here
+Setup (genmedia CLI + Fal key), the async execution pattern (schema → run
+`--async` → poll → download → resume), uploading local inputs, and common
+errors are shared across all VEED skills — see [../COMMON.md](../COMMON.md).
+Every `genmedia run` below follows that pattern.
+
+This workflow reuses the veed-talking-head, veed-talking-head-text, and
+veed-subtitles skills' endpoints; those skills are the source of truth for
+their full option sets (voice descriptions, the subtitle preset gallery,
+customization). Defer to them for detail.
 
 ## What to ask the user for
 
@@ -59,73 +59,72 @@ Do not skip any question, even if the user gave you a one-line brief.
    - If the user provides text → store as script_text, set mode = "text"
    - Accepted audio formats: MP3, WAV, M4A, AAC
 
-4. Voice description — ONLY ask this if mode == "text". Say to the user:
-   "How would you like the voice to sound? For best results, describe
-   multiple attributes — gender, age, accent, tone, energy. For example:
-   'Professional female voice, mid-30s, British accent, warm and
-   confident' works much better than just 'British accent'. Or say
-   'auto' to let VEED pick a voice based on the spokesperson image."
-   - If the user provides a specific description (anything other than an
-     opt-out phrase below) → store as voice_description
-   - If the user says ANY of: 'auto', 'skip', 'no preference', 'you
-     pick', 'doesn't matter', 'default', or any other phrase indicating
-     no preference → set voice_description to None.
+4. Voice description — ONLY ask this if mode == "text". Ask the user how
+   they want the voice to sound, encouraging multiple attributes (gender,
+   age, accent, tone, energy) over a bare one-liner, or 'auto' to let VEED
+   pick from the spokesperson image. See
+   [references/voice-description.md](references/voice-description.md) for the
+   exact phrasing and the short-description follow-up.
+   - If the user provides a specific description → store as voice_description
+   - If the user says ANY of: 'auto', 'skip', 'no preference', 'you pick',
+     'doesn't matter', 'default', or any similar opt-out → set
+     voice_description to None.
    CRITICAL: Do NOT store the literal string "auto" (or similar opt-out
    phrases) as voice_description. Fabric would interpret it as a voice
    description verbatim and produce a strange-sounding voice.
-   If the user gave a very short description (1-3 words like "British
-   accent"), gently prompt them to add more detail. Say: "That's a
-   good start — to get the best voice match, could you add a bit more?
-   E.g., gender, age range, and overall tone (calm / energetic /
-   authoritative)?" Then update voice_description with their fuller
-   answer.
 
-5. Resolution — ask: "Which resolution do you want?
-   - 480p — $0.08 per second of output video
-   - 720p — $0.15 per second of output video"
-   Default to 480p if not specified.
+5. Resolution and aspect ratio —
+   - Resolution: 480p ($0.08/sec) or 720p ($0.15/sec). Default 480p.
+   - Aspect ratio — the orientation of the final video: 9:16 vertical for
+     TikTok / Reels / Shorts (suggested for social / UGC), 1:1 square, or
+     16:9 landscape. Default 9:16. Store as aspect_ratio.
+   Fabric has no aspect setting of its own — the final video inherits the
+   composite image's shape — so aspect_ratio is applied when generating the
+   spokesperson and compositing (Steps 3-4), not at the talking-head step.
 
 6. Subtitles — ask: "Do you want subtitles burned into the final video?"
    - If yes → ask which preset. Say to the user: "Which subtitle style?
      The dynamic presets (glass, whisper, glide2, fusion, glide, terminal,
-     handwritten) are richer and best for social content. Basic presets
-     (simple, plain, beans, corpo, boo, shadeplay, casper, capri, lowkey,
-     vinta, diego, ali, slay, kitty, hustle, karl, sprout, flex, mint,
-     rizz, vegas) are lightweight. Default suggestion: 'glass'."
-     Store as subtitle_preset.
-     Then ALWAYS ask a follow-up about customization. Say to the user:
-     "Do you want to customize the subtitle look, or use the preset
-     defaults? You can override any of these:
-     - Position — top, center, or bottom
-     - Shadow intensity — none, min, mid, or max (improves readability
-       over busy backgrounds)
-     - Per-tier text styling — font, weight (100-900), and hex colour
-       for each of the three word-importance tiers: accessible (every
-       word), highlighted (mid-rank words), viral (top-rank hook words)
-     Any field you leave out keeps the preset's default. Say 'defaults'
-     or 'skip' if you want to use the preset as-is."
+     handwritten, backdrop, backdrop2) are richer and best for social content;
+     there are also lightweight basic presets. Default suggestion: 'glass'." (See the
+     veed-subtitles skill for the full preset gallery.)
+     Store as subtitle_preset. Note the dynamic presets carry a 2x cost
+     multiplier — this matters for the estimate in Step 1.
+     Then ALWAYS ask a follow-up about customization: whether they want to
+     override the subtitle look (position, shadow, per-word-tier font /
+     weight / colour) or use the preset defaults. The veed-subtitles skill
+     is the source of truth for the full option set and constraints.
      - If the user provides overrides → build a subtitle_customization
-       dict (see Step 6 below) and store it
+       JSON object (see Step 6 below) and store it
      - If the user says 'defaults', 'skip', 'no preference', or similar →
        set subtitle_customization to None
    - If no → set subtitle_preset to None and subtitle_customization to None
 
 ## Step 1 — Show cost estimate before proceeding
 
-Estimate the total cost upfront and ask the user to confirm.
+Estimate the total cost upfront and ask the user to confirm. Fetch current
+rates for each endpoint this run will use rather than relying on memorised
+numbers:
+
+    genmedia pricing fal-ai/gemini-25-flash-image --json   # image gen / composite
+    genmedia pricing veed/fabric-1.0 --json                # or veed/fabric-1.0/text
+    genmedia pricing veed/subtitles --json                 # only if subtitles
+
+The indicative rates below are for illustration — use the live rates in the
+actual estimate.
 
 Cost components:
 - Nano Banana product generation: $0.039 (only if user described the product)
 - Nano Banana spokesperson generation: $0.039 (only if user described the spokesperson)
 - Nano Banana composite (always): $0.039
 - Fabric talking head:
-    estimated_seconds = audio_duration OR (word_count / 150) x 60
+    estimated_seconds = audio_duration OR (word_count / 130) x 60
     fabric_cost = estimated_seconds x price_per_second
     Where price_per_second = $0.08 (480p) or $0.15 (720p)
 - Subtitles (only if subtitle_preset is not None):
     Minimum charge is 1 minute = $0.10. For dynamic presets (glass,
-    whisper, glide2, fusion, glide, terminal, handwritten), apply 2x
-    multiplier = $0.20 minimum.
+    whisper, glide2, fusion, glide, terminal, handwritten, backdrop,
+    backdrop2), apply 2x multiplier = $0.20 minimum.
 
 Show the breakdown to the user. Example for a 10-second video at 720p
 with the glass subtitle preset:
@@ -142,167 +141,121 @@ Wait for explicit confirmation before continuing.
 
 ## Step 2 — Get or generate the product image
 
-If product_image_path is set (user uploaded):
-    product_image_url = fal_client.upload_file(product_image_path)
+If product_image_path is set (user uploaded), upload it and keep the URL:
 
-Else (user described):
-    import fal_client
-    result = fal_client.subscribe(
-        "fal-ai/gemini-25-flash-image",
-        arguments={
-            "prompt": product_prompt,
-            "num_images": 1
-        },
-        with_logs=True
-    )
-    product_image_url = result["images"][0]["url"]
+    genmedia upload /path/to/product.jpg --json
+
+Else (user described), generate one with Nano Banana:
+
+    genmedia run fal-ai/gemini-25-flash-image \
+      --prompt "<product_prompt>" \
+      --num_images 1 \
+      --json
+
+Take the first image URL from the result as product_image_url.
 
 ## Step 3 — Get or generate the spokesperson image
 
-If spokesperson_image_path is set (user uploaded):
-    spokesperson_image_url = fal_client.upload_file(spokesperson_image_path)
+If spokesperson_image_path is set (user uploaded), upload it and keep the URL:
 
-Else (user described):
-    result = fal_client.subscribe(
-        "fal-ai/gemini-25-flash-image",
-        arguments={
-            "prompt": spokesperson_prompt + ", clear face, looking at camera, "
-                      "professional photo, plain background",
-            "num_images": 1
-        },
-        with_logs=True
-    )
-    spokesperson_image_url = result["images"][0]["url"]
+    genmedia upload /path/to/spokesperson.jpg --json
+
+Else (user described), generate one with Nano Banana in the chosen
+aspect_ratio so the person is framed for the final orientation:
+
+    genmedia run fal-ai/gemini-25-flash-image \
+      --prompt "<spokesperson_prompt>, clear face, looking at camera, professional photo, plain background" \
+      --aspect_ratio "<aspect_ratio>" \
+      --num_images 1 \
+      --json
+
+Take the first image URL from the result as spokesperson_image_url.
 
 ## Step 4 — Composite the spokesperson holding the product
 
-Use Nano Banana's edit endpoint with both images and a fixed prompt:
+Use Nano Banana's edit endpoint with both images and a fixed prompt.
+Pass both URLs on the `--image_urls` flag as a JSON array:
 
-result = fal_client.subscribe(
-    "fal-ai/gemini-25-flash-image/edit",
-    arguments={
-        "image_urls": [spokesperson_image_url, product_image_url],
-        "prompt": "Make the model hold this product in their hand. "
-                  "Keep the spokesperson's face clearly visible and "
-                  "looking at the camera. Natural pose, well-lit."
-    },
-    with_logs=True
-)
-composite_image_url = result["images"][0]["url"]
+    genmedia run fal-ai/gemini-25-flash-image/edit \
+      --image_urls '["<spokesperson_image_url>", "<product_image_url>"]' \
+      --prompt "Make the model hold this product in their hand. Keep the spokesperson's face clearly visible and looking at the camera. Natural pose, well-lit." \
+      --aspect_ratio "<aspect_ratio>" \
+      --json
+
+Take the first image URL from the result as composite_image_url. This image's
+shape sets the final video's orientation, so make sure aspect_ratio matches
+what the user asked for.
 
 ## Step 5 — Generate the talking head video
 
-Branch based on mode:
+The Nano Banana steps above are quick and run synchronously, but the talking
+head is the long, expensive job — run it asynchronously so a dropped
+connection doesn't lose it. Keep the `composite_image_url` from Step 4: if a
+resume is needed you re-run only this step, not the paid image steps.
 
-If mode == "audio":
-    audio_url = fal_client.upload_file(audio_path)
-    result = fal_client.subscribe(
-        "veed/fabric-1.0",
-        arguments={
-            "image_url": composite_image_url,
-            "audio_url": audio_url,
-            "resolution": resolution
-        },
-        with_logs=True
-    )
+Branch based on mode.
 
-If mode == "text":
-    arguments = {
-        "image_url": composite_image_url,
-        "text": script_text,
-        "resolution": resolution
-    }
-    if voice_description is not None:
-        arguments["voice_description"] = voice_description
-    result = fal_client.subscribe(
-        "veed/fabric-1.0/text",
-        arguments=arguments,
-        with_logs=True
-    )
+If mode == "audio", upload the audio and run Fabric 1.0 with `--async`:
 
-video_url = result["video"]["url"]
+    genmedia upload /path/to/audio.mp3 --json
 
-If subtitle_preset is None: return video_url to the user and stop here.
+    genmedia run veed/fabric-1.0 \
+      --image_url "<composite_image_url>" \
+      --audio_url "<audio_url>" \
+      --resolution 480p \
+      --async \
+      --json
+
+If mode == "text", run Fabric 1.0 Text with `--async` (add
+`--voice_description` only if voice_description is not None):
+
+    genmedia run veed/fabric-1.0/text \
+      --image_url "<composite_image_url>" \
+      --text "<script_text>" \
+      --resolution 480p \
+      --async \
+      --json
+
+Use `720p` if the user chose it. Poll for the result per ../COMMON.md with
+the endpoint you ran, and take `video.url` as video_url.
+
+If subtitle_preset is None, this talking head is the final output — download
+it to `./outputs/product-pitch/` (per ../COMMON.md) and return both the path
+and URL, then stop. If subtitle_preset is set, do NOT download the
+intermediate — keep video_url and continue to Step 6.
 
 ## Step 6 — Add subtitles (only if subtitle_preset is set)
 
-Follow the veed-subtitles skill workflow using video_url as the input.
-Pass:
-- video_url: the talking head video URL from Step 5
-- preset: subtitle_preset
-- customization: only if the user provided overrides
+Run the subtitles endpoint (async, per ../COMMON.md) using video_url as input.
+Add `--customization` only if the user provided overrides:
 
-If subtitle_customization is set, build the dict matching the values the
-user gave. Example:
+    genmedia run veed/subtitles \
+      --video_url "<video_url>" \
+      --preset "<subtitle_preset>" \
+      --async \
+      --json
 
-subtitle_customization = {
-    "position": "bottom",
-    "shadow": "mid",
-    "text_customizations": {
-        "accessible":  {"font": "Inter", "weight": 500, "color": "#FFFFFF"},
-        "highlighted": {"font": "Inter", "weight": 700, "color": "#FFD500"},
-        "viral":       {"font": "Inter", "weight": 900, "color": "#FF2E63"}
-    }
-}
+If subtitle_customization is set, build the JSON object per the veed-subtitles
+skill (the source of truth for its shape and constraints) and pass it as
+`--customization '<JSON>'`. Keep `video_url` — on a resume you re-run only the
+subtitles step, not the paid talking-head step.
 
-Constraints:
-- position: top, center, or bottom
-- shadow: none, min, mid, or max
-- font: must be a supported Google Font — see
-  https://www.veed.io/api/v1/subtitle-renders/fonts
-- weight: 100-900
-- color: hex string (e.g. "#FFFFFF")
+Download the final video to `./outputs/product-pitch/` (per ../COMMON.md) as
+final_video_url, and give the user both the local path and the URL.
 
-Build the API arguments conditionally:
-
-arguments = {
-    "video_url": video_url,
-    "preset": subtitle_preset
-}
-if subtitle_customization is not None:
-    arguments["customization"] = subtitle_customization
-
-result = fal_client.subscribe(
-    "veed/subtitles",
-    arguments=arguments,
-    with_logs=True
-)
-final_video_url = result["video"]["url"]
-
-Do not ask the user about language or SRT input — for this workflow,
-auto-transcription is used. If the user needs language or SRT control,
+Do not ask the user about language, translation, SRT, or vocabulary — this
+workflow uses plain auto-transcription. If the user needs any of that control,
 suggest running veed-subtitles separately afterwards.
 
-Return final_video_url to the user.
-
 ## After the call
-- Return the final video URL to the user
-- Warn the user that Fal URLs expire after ~24 hours — download the
-  file locally if they want to keep it
-- 401 error: FAL_KEY is invalid or not set
-- 422 error: an input image/audio is not accessible, in a bad format,
-  or the audio/script exceeds Fabric's 30-second cap
-- 429 error: rate limit — wait a moment and retry
-- 500 error: one of the underlying models had an issue. Identify which
-  step failed (product gen / spokesperson gen / composite / talking head
-  / subtitles) and retry that step only — don't restart the whole flow.
+- Return both the local file path and the final video URL to the user.
+- Common errors (401 / 422 / 429 / 500) are in ../COMMON.md. Workflow-specific:
+  on a 500, identify which step failed (product gen / spokesperson gen /
+  composite / talking head / subtitles) and retry that step only — don't
+  restart the whole flow. A 422 often means an input exceeds Fabric's 30s cap.
 
 ## Pricing
-This skill chains multiple models. Per-call costs:
-- Nano Banana (generation): $0.039 per image
-- Nano Banana (edit/composite): $0.039 per call
-- Fabric 1.0 (audio): $0.08/sec at 480p, $0.15/sec at 720p
-- Fabric 1.0 text: $0.08/sec at 480p, $0.15/sec at 720p
-- Subtitles: $0.10/min base, 2x for dynamic presets, 1-minute minimum
-
-Typical end-to-end cost for a 10-second video at 720p with subtitles
-where both images are user-uploaded: ~$1.70
-Typical end-to-end cost for a 10-second video at 720p with subtitles
-where both images are AI-generated: ~$1.82
-
-Model pages:
-- Nano Banana: https://fal.ai/models/fal-ai/gemini-25-flash-image
-- Nano Banana edit: https://fal.ai/models/fal-ai/gemini-25-flash-image/edit
-- Fabric audio: https://fal.ai/models/veed/fabric-1.0
-- Fabric text: https://fal.ai/models/veed/fabric-1.0/text
-- Subtitles: https://fal.ai/models/veed/subtitles
+This skill chains multiple models — run `genmedia pricing <endpoint> --json`
+per endpoint for authoritative current rates. Indicative per-call costs,
+typical end-to-end totals, and model pages are in
+[references/pricing.md](references/pricing.md).

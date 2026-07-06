@@ -2,27 +2,25 @@
 version: 1.4.0
 name: veed-talking-head-text
 description: >
-  Generate a talking head video from a static image and a text script
-  using VEED's Fabric 1.0 Text API. VEED's AI voice generator converts
-  the script to speech automatically. Use when: "generate a talking head
-  video from a script", "make this image say this", "create a spokesperson
-  video with this text", "I want to type what the person says".
-  Accepts local file paths or public URLs for the image.
-  NOT for: using your own audio file (use veed-talking-head).
+  Turn a static image + a text script into a lip-synced talking head video
+  with VEED's Fabric 1.0 Text — VEED generates the speech, no audio file
+  needed. Use when the user wants a spokesperson to say typed text: "make this
+  photo say '...'", "talking head from a script", "spokesperson video from
+  text". Image is a local path or URL. NOT for: using your own audio file
+  (use veed-talking-head).
 ---
 
 # VEED Talking Head — Text to Video (Fabric 1.0)
 
 ## What this skill does
-Takes a static image and a text script. VEED's AI voice generator converts
-the text to speech and syncs it to the image. No audio file needed.
-Maximum generation: 30 seconds of output video.
-Powered by VEED's Fabric 1.0 Text model on Fal.
+Generates speech from a text script and lip-syncs it to the image — no audio
+file needed. Max 30 seconds of output per generation.
 
 ## Before you start
-The user needs:
-- A Fal API key — get one free at https://fal.ai/dashboard/keys
-- Set it as an environment variable: export FAL_KEY=your_key_here
+Setup (genmedia CLI + Fal key), the async execution pattern, uploading local
+inputs, and common errors are shared across all VEED skills — see
+[../COMMON.md](../COMMON.md). This file covers only what's specific to Fabric
+1.0 Text.
 
 ## What to ask the user for
 
@@ -42,78 +40,47 @@ IMPORTANT: Collect ALL four inputs before proceeding. Do not skip any.
    and authoritative tone'. If you have no preference, just say 'auto'
    and VEED will generate a voice based on the image."
    - If the user provides a description → store it as voice_description
-   - If the user says 'auto', 'skip', 'no preference', or similar → set
-     voice_description to None and do NOT pass it in the API call
+   - If the user says 'auto', 'skip', 'no preference', or similar → do NOT
+     pass a voice_description flag in the run command
 
-4. Resolution — ask which the user prefers:
-   - 480p — $0.08 per second of output video
-   - 720p — $0.15 per second of output video
-   Default to 480p if not specified.
+4. Resolution — 480p or 720p (see Pricing). Default to 480p if not specified.
 
-## Step 1 — Handle image input
+## Step 1 — Estimate cost and confirm
 
-If the user provided a local file path, upload it to Fal:
+Fetch the rate (`genmedia pricing veed/fabric-1.0/text --json`). Fabric Text
+is billed per second of output video by resolution; estimate the duration
+from the script (roughly 130 words per minute):
 
-import fal_client
-image_url = fal_client.upload_file(image_path)
+    estimated_seconds = word_count / 130 x 60
+    estimated_cost = estimated_seconds x price_per_second
 
-If already a public URL, use it directly — no upload needed.
+Show the estimate and get confirmation. Example (indicative $0.08/sec at 480p,
+$0.15/sec at 720p): "~20 words ≈ 9 seconds ≈ $0.72 at 720p. Proceed?"
 
-## Step 2 — Show cost estimate before proceeding
+## Step 2 — Generate the video
 
-Estimate the output duration from the script length
-(roughly 130 words per minute as a baseline).
+Upload the local image (see ../COMMON.md), then follow the async execution
+pattern in ../COMMON.md (schema → run `--async` → poll → download). The
+endpoint is `veed/fabric-1.0/text`. Include `--voice_description` ONLY if the
+user gave one:
 
-estimated_seconds = word_count / 130 x 60
-estimated_cost = estimated_seconds x price_per_second
+    genmedia run veed/fabric-1.0/text \
+      --image_url "<image_url>" \
+      --text "<script text>" \
+      --resolution 480p \
+      --async \
+      --json
 
-Where price_per_second is $0.08 (480p) or $0.15 (720p).
+Add `--voice_description "<voice description>"` when provided, and use `720p`
+if chosen. Download the result to `./outputs/talking-head-text/`, and return
+both the local path and the URL.
 
-Show the estimate and ask the user to confirm before proceeding.
-Example: "This script (~20 words) will take roughly 9 seconds and cost
-approximately $0.72 at 720p. Shall I proceed?"
-
-## Step 3 — Generate the video
-
-Build the arguments dict conditionally — only include voice_description
-if the user provided one (not None):
-
-import fal_client
-
-arguments = {
-    "image_url": image_url,
-    "text": script_text,
-    "resolution": resolution
-}
-
-if voice_description is not None:
-    arguments["voice_description"] = voice_description
-
-def on_queue_update(update):
-    if hasattr(update, "logs"):
-        for log in update.logs:
-            print(log["message"])
-
-result = fal_client.subscribe(
-    "veed/fabric-1.0/text",
-    arguments=arguments,
-    with_logs=True,
-    on_queue_update=on_queue_update
-)
-
-print(result["video"]["url"])
-
-## After the call
-- Return the video.url to the user
-- Warn the user that Fal URLs expire after ~24 hours — download locally
-  if they want to keep it
-- 401 error: FAL_KEY is invalid or not set
-- 422 error: image not accessible, wrong format, or script too long
-- 429 error: rate limit — wait a moment and retry
-- 500 error: model error on Fal's side — retry once before giving up
+## Errors
+Common errors (401 / 422 / 429 / 500) are in ../COMMON.md. Here, a 422 usually
+means the image is inaccessible, in a wrong format, or the script exceeds the
+30-second cap.
 
 ## Pricing
-- 480p: $0.08 per second of output video
-- 720p: $0.15 per second of output video
-- Maximum: 30 seconds per generation
-- Fal model page: https://fal.ai/models/veed/fabric-1.0/text
+Run `genmedia pricing veed/fabric-1.0/text --json` for the authoritative
+current rate. Indicative: 480p $0.08/sec, 720p $0.15/sec; max 30s per
+generation. Fal model page: https://fal.ai/models/veed/fabric-1.0/text
