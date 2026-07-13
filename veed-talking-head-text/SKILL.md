@@ -45,6 +45,14 @@ IMPORTANT: Collect ALL four inputs before proceeding. Do not skip any.
 
 4. Resolution — 480p or 720p (see Pricing). Default to 480p if not specified.
 
+### For best results
+Flag any of these to the user before spending on a run (advise, don't auto-fix):
+- **One person only** — Fabric animates a single face; images with multiple people aren't supported well. Crop to the subject if needed.
+- **Clear, well-lit face** — the face must be plainly visible for lip detection. Side angles are fine; avoid hats or heavy glasses that hide features.
+- **Match the image to the script's tone** — the starting expression should fit how the script sounds; don't pair a big grin with a serious script.
+- **High-res image** — aim for ≥2048×1152 px and ≤6MB.
+- **English syncs best** — lip-sync is strongest in English; some languages (e.g. Hebrew) are noticeably weaker.
+
 ## Step 1 — Estimate cost and confirm
 
 Fetch the rate (`genmedia pricing veed/fabric-1.0/text --json`). Fabric Text

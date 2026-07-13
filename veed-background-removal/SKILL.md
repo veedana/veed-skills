@@ -51,20 +51,28 @@ Collect ALL of the following before proceeding:
        remove green/blue spill on the subject's edges. Raise toward 1 for heavy
        spill; lower if edges look eroded.
 
+### For best results
+Flag any of these to the user before spending on a run (advise, don't auto-fix):
+- **Keep one stable subject** — the model works frame-by-frame, so a consistent subject removes cleanly; big focus or subject changes mid-clip cause flicker.
+- **Contrast helps, but plain isn't required** — it handles natural, busy backgrounds; the more the subject stands out, the sharper the edges.
+- **Hair and fine detail are the hard cases** — keep `refine_foreground_edges` on when they matter.
+- **Use unprocessed source** — footage already run through virtual cameras or filters removes worse; use the original.
+- **Green-screen mode is only for actual green/blue-screen footage** — otherwise use standard or fast.
+
 ## Step 1 — Estimate cost and confirm
 
 Fetch the rate for the chosen endpoint variant
-(`genmedia pricing <endpoint> --json`). Billed per 30 frames. For standard/fast
-the rate depends on `refine_foreground_edges`; green-screen has no refine
-setting, so price it from its own `genmedia pricing`.
+(`genmedia pricing <endpoint> --json`). Billed per 30 frames. Standard and Fast
+have different per-30-frame rates, each varying with `refine_foreground_edges`;
+green-screen has no refine setting, so price it from its own `genmedia pricing`.
 
 - Get video duration in seconds (use ffprobe or ask the user)
 - Assume 30fps unless the user specifies otherwise
 - Estimated cost = (duration_seconds x fps / 30) x price_per_30_frames
 
-Show the estimate and get confirmation. Example (indicative standard/fast
-rate $0.0225/30f refine ON, $0.012 OFF): "~$0.45 for a 10-second 30fps clip,
-refine ON. Proceed?"
+Show the estimate and get confirmation. Example (indicative — Standard, refine
+ON at $0.0225/30f): "~$0.45 for a 10-second 30fps clip, Standard with refine
+ON. Proceed?"
 
 ## Step 2 — Remove the background
 
@@ -103,9 +111,11 @@ means the video is inaccessible or in an unsupported format.
 
 ## Pricing
 Run `genmedia pricing veed/video-background-removal --json` (or the fast /
-green-screen variant) for the authoritative current rate. Indicative
-(standard/fast): refine ON $0.0225 per 30 frames, refine OFF $0.012 per 30
-frames. Green-screen has no refine setting — price it from its own endpoint.
+green-screen variant) for the authoritative current rate. Standard and Fast
+have different rates; indicative per 30 frames:
+- Standard: refine ON $0.0225 / OFF $0.015
+- Fast: refine ON $0.012 / OFF $0.008
+- Green screen: ~$0.012–0.015 (no refine setting)
 
 Model pages:
 - Standard: https://fal.ai/models/veed/video-background-removal

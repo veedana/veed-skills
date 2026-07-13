@@ -78,6 +78,11 @@ hasn't mentioned them or the use-case calls for it.
    - If the user says 'defaults', 'skip', 'no preference', or similar →
      do NOT pass a customization flag in the run command
 
+### For best results
+- **Pass the source language when you know it** — improves transcription accuracy over auto-detect (`--language`).
+- **Add brand/product terms to `vocabulary`** — stops the transcriber mishearing names ("VEED" → "vid"); up to 100 entries.
+- **Legibility is automatic** — the renderer places captions in safe zones for 9:16 / 1:1 / 16:9, so no manual positioning is needed for readability.
+
 ## Step 1 — Build the customization object (if provided)
 
 Only if the user provided overrides. Build the JSON object per

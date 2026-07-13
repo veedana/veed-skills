@@ -36,7 +36,7 @@ veed-skills/
 ├── veed-talking-head-text/SKILL.md # Endpoint skill
 ├── veed-subtitles/                 # Endpoint skill (+ references/: presets, customization)
 ├── veed-background-removal/SKILL.md # Endpoint skill
-└── veed-product-pitch/             # Workflow skill (+ references/: voice-description, pricing)
+└── veed-product-pitch/             # Workflow skill (+ references/: voice-description, pricing, image-prompts)
 ```
 
 There is **no root SKILL.md**. Endpoint skills are independent; the workflow skill (product-pitch) chains them but shares no state between invocations.
@@ -89,7 +89,7 @@ The repo installs as a whole (git clone / the marketplace plugin), because all s
 - **`../COMMON.md` is the only permitted upward reference.** Within a skill, per-skill `references/*.md` are linked relatively and stay inside the skill folder.
 - Every file linked from a `SKILL.md` exists; conversely every `references/` file is linked from its `SKILL.md` — no orphans.
 
-Per-skill references today: `veed-subtitles/references/{presets,customization}.md`, `veed-product-pitch/references/{voice-description,pricing}.md`. No skill ships `scripts/` yet.
+Per-skill references today: `veed-subtitles/references/{presets,customization}.md`, `veed-product-pitch/references/{voice-description,pricing,image-prompts}.md`. No skill ships `scripts/` yet.
 
 ## Key decisions
 

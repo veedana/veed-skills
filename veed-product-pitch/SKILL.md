@@ -145,7 +145,9 @@ If product_image_path is set (user uploaded), upload it and keep the URL:
 
     genmedia upload /path/to/product.jpg --json
 
-Else (user described), generate one with Nano Banana:
+Else (user described), write a strong prompt first — see
+[references/image-prompts.md](references/image-prompts.md), and show it to the
+user before generating — then run Nano Banana:
 
     genmedia run fal-ai/gemini-25-flash-image \
       --prompt "<product_prompt>" \
@@ -160,8 +162,12 @@ If spokesperson_image_path is set (user uploaded), upload it and keep the URL:
 
     genmedia upload /path/to/spokesperson.jpg --json
 
-Else (user described), generate one with Nano Banana in the chosen
-aspect_ratio so the person is framed for the final orientation:
+Else (user described), write the prompt per
+[references/image-prompts.md](references/image-prompts.md) — the spokesperson
+section folds in the Fabric input rules (one clear face, framing, expression
+matching the script's tone) since this image feeds the talking-head step — and
+show it to the user before generating. Generate in the chosen aspect_ratio so
+the person is framed for the final orientation:
 
     genmedia run fal-ai/gemini-25-flash-image \
       --prompt "<spokesperson_prompt>, clear face, looking at camera, professional photo, plain background" \
@@ -184,7 +190,10 @@ Pass both URLs on the `--image_urls` flag as a JSON array:
 
 Take the first image URL from the result as composite_image_url. This image's
 shape sets the final video's orientation, so make sure aspect_ratio matches
-what the user asked for.
+what the user asked for. Note: Fabric snaps its output to a fixed set of aspect
+buckets (dimensions divisible by 64), so the final video's ratio may shift
+slightly from the requested aspect_ratio (e.g. 16:9 → ~1.86) — don't promise a
+pixel-exact ratio.
 
 ## Step 5 — Generate the talking head video
 

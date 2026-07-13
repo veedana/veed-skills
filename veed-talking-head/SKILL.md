@@ -36,6 +36,14 @@ Collect ALL of the following before proceeding:
 
 3. Resolution — 480p or 720p (see Pricing). Default to 480p if not specified.
 
+### For best results
+Flag any of these to the user before spending on a run (advise, don't auto-fix):
+- **One person only** — Fabric animates a single face; images with multiple people aren't supported well. Crop to the subject if needed.
+- **Clear, well-lit face** — the face must be plainly visible for lip detection. Side angles are fine; avoid hats or heavy glasses that hide features.
+- **Match the expression to the audio** — the starting frame's emotion should fit the tone of the speech; a big smile over somber audio looks uncanny.
+- **High-res image** — aim for ≥2048×1152 px and ≤6MB.
+- **English syncs best** — lip-sync is strongest in English; some languages (e.g. Hebrew) are noticeably weaker.
+
 ## Step 1 — Estimate cost and confirm
 
 Fabric is billed per second of output video, at a rate that depends on
