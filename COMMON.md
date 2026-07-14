@@ -7,6 +7,12 @@ the single source of truth for the boilerplate below.
 > This repo installs as a whole (git clone / the marketplace plugin), because
 > the skills share this file. See [INSTALL.md](./INSTALL.md).
 
+## Responsible use
+These skills generate and animate people and voices, so a few lines before you run:
+- **Likeness & consent** — don't animate or voice a real, identifiable person without their consent. Fabric brings a face to life from a single photo, which is a deepfake vector.
+- **No deception** — don't produce content meant to mislead: impersonation, fake endorsements or testimonials presented as real, or clearly fraudulent / illegal schemes.
+- **When in doubt, ask** — if a request looks like it crosses these lines, flag it to the user rather than silently proceeding. This is a backstop; your host's own safety policies still apply.
+
 ## Setup — genmedia CLI
 
 The skills run through the genmedia CLI, which handles model discovery, file

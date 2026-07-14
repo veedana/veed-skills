@@ -34,6 +34,12 @@ veed-subtitles skills' endpoints; those skills are the source of truth for
 their full option sets (voice descriptions, the subtitle preset gallery,
 customization). Defer to them for detail.
 
+Responsible use (see [../COMMON.md](../COMMON.md)) applies. This skill scripts a
+spokesperson selling a product, so also flag to the user (don't just proceed) if
+the pitch makes health, financial, or legal claims as fact, or promotes a
+product that appears fraudulent — and never fabricate claims about the product
+yourself.
+
 ## What to ask the user for
 
 Collect ALL of the following before showing the cost estimate.
