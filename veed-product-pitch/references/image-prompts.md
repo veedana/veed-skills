@@ -19,7 +19,7 @@ you *want* (there is no negative-prompt field).
 
 ## Product prompt
 Expand the user's product description across the dimensions above.
-<!-- illustrative — swap for a VEED-tested example -->
+
 - User says: "a water bottle"
 - Expanded: "A matte-black stainless-steel insulated water bottle, upright and
   centered, on a clean light-grey seamless studio background, soft even studio
@@ -30,7 +30,7 @@ The spokesperson image is fed into Fabric, so its prompt must also satisfy the
 talking-head input rules (see veed-talking-head's "For best results"): **one
 clearly-visible, well-lit face, head-and-shoulders framing, expression matching
 the script's tone, plain background**. This image sets the final video's quality.
-<!-- illustrative — swap for a VEED-tested example -->
+
 - User says: "a friendly young woman"
 - Expanded: "A friendly woman in her late 20s, warm natural smile, looking
   directly at camera, head-and-shoulders framing, soft daylight, plain light
